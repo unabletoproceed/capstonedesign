@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>System Architecture - SERABI</title>
+    <link rel="stylesheet" href="css/style.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* --- PIPELINE STYLES (Embedded for ease) --- */
+        .pipeline-container {
+            background: var(--white);
+            padding: 40px 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+
+        .pipeline-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-width: 800px; /* Ensure it doesn't squish on mobile */
+            position: relative;
+        }
+
+        /* The Connecting Line */
+        .pipeline-line {
+            position: absolute;
+            top: 50%;
+            left: 50px;
+            right: 50px;
+            height: 4px;
+            background: #e0e0e0;
+            z-index: 0;
+            transform: translateY(-50%);
+        }
+
+        /* Animated Data Packet */
+        .data-packet {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 12px;
+            height: 12px;
+            background: var(--water-dark);
+            border-radius: 50%;
+            transform: translateY(-50%);
+            z-index: 1;
+            animation: flowData 4s linear infinite;
+            box-shadow: 0 0 10px var(--water-light);
+        }
+
+        @keyframes flowData {
+            0% { left: 10%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { left: 90%; opacity: 0; }
+        }
+
+        /* The Nodes (Circles) */
+        .node {
+            position: relative;
+            z-index: 2;
+            width: 100px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .node:hover { transform: translateY(-5px); }
+
+        .node-icon {
+            width: 70px;
+            height: 70px;
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 10px;
+            font-size: 28px;
+            color: #888;
+            transition: all 0.3s;
+        }
+
+        /* Active State */
+        .node.active .node-icon {
+            border-color: var(--water-dark);
+            background: #eefbfd;
+            color: var(--deep-ocean);
+            box-shadow: 0 0 20px rgba(147, 220, 236, 0.5);
+        }
+
+        .node h4 { font-size: 0.9rem; color: #666; margin: 0; }
+
+        /* --- DETAIL SECTIONS --- */
+        .detail-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.5s ease;
+        }
+
+        .detail-card.active { display: block; }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 20px;
+        }
+
+        .detail-header i {
+            font-size: 3rem;
+            color: var(--water-dark);
+        }
+
+        /* Code Block Styling */
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 20px 0;
+            border-left: 4px solid var(--water-dark);
+        }
+
+        .keyword { color: #569cd6; } /* Blue */
+        .string { color: #ce9178; } /* Orange */
+        .comment { color: #6a9955; } /* Green */
+        .func { color: #dcdcaa; } /* Yellow */
+
+        .math-box {
+            background: #fff9c4;
+            padding: 15px;
+            border-left: 4px solid #fbc02d;
+            margin: 20px 0;
+            font-family: 'Times New Roman', serif;
+            font-size: 1.2rem;
+            font-style: italic;
+        }
+
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">SERABI</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Beranda</a></li>
+                <li><a href="learn_more.html" class="active">Arsitektur Sistem</a></li>
+                <li><a href="simulation.html">Simulasi</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        
+        <header class="hero-section">
+            <div class="hero-content">
+                <h1>Bagaimana Sistem Bekerja?</h1>
+                <p>Klik pada node di bawah untuk melihat proses teknis dari Radar hingga Web.</p>
+            </div>
+        </header>
+
+        <section class="pipeline-container">
+            <div class="pipeline-wrapper">
+                <div class="pipeline-line"></div>
+                <div class="data-packet"></div> <div class="node active" onclick="showDetail('radar', this)">
+                    <div class="node-icon"><i class="fas fa-satellite-dish"></i></div>
+                    <h4>1. uRAD Sensor</h4>
+                </div>
+
+                <div class="node" onclick="showDetail('pi', this)">
+                    <div class="node-icon"><i class="fab fa-python"></i></div>
+                    <h4>2. Processing (Pi)</h4>
+                </div>
+
+                <div class="node" onclick="showDetail('cloud', this)">
+                    <div class="node-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <h4>3. Database</h4>
+                </div>
+
+                <div class="node" onclick="showDetail('web', this)">
+                    <div class="node-icon"><i class="fas fa-laptop-code"></i></div>
+                    <h4>4. Dashboard</h4>
+                </div>
+            </div>
+        </section>
+
+        <div id="radar" class="detail-card active">
+            <div class="detail-header">
+                <i class="fas fa-satellite-dish"></i>
+                <div>
+                    <h2>1. Sensing: FMCW Radar</h2>
+                    <p>Akuisisi data fisik menggunakan gelombang elektromagnetik 24 GHz.</p>
+                </div>
+            </div>
+            
+            <h3>Prinsip Fisika: Efek Doppler</h3>
+            <p>Radar memancarkan gelombang kontinu (CW) dan menerima pantulan dari permukaan air. Pergerakan air menyebabkan pergeseran frekuensi.</p>
+            
+            <div class="math-box">
+                f<sub>d</sub> = 2 * v * f<sub>0</sub> * cos(θ) / c
+            </div>
+            <ul>
+                <li><strong>f<sub>d</sub></strong>: Frekuensi Doppler (Shift)</li>
+                <li><strong>v</strong>: Kecepatan air</li>
+                <li><strong>θ</strong>: Sudut depresi radar</li>
+            </ul>
+            
+            [Image of radar signal processing flow chart]
+        </div>
+
+        <div id="pi" class="detail-card">
+            <div class="detail-header">
+                <i class="fab fa-python"></i>
+                <div>
+                    <h2>2. Processing: Python & FFT</h2>
+                    <p>Pengolahan sinyal digital di Edge (Raspberry Pi 4).</p>
+                </div>
+            </div>
+
+            <h3>Algoritma FFT (Fast Fourier Transform)</h3>
+            <p>Sinyal waktu (Time Domain) diubah menjadi frekuensi (Frequency Domain) untuk menemukan kecepatan dominan.</p>
+
+            <div class="code-block">
+<span class="comment"># 1. Ambil Data I/Q dari Sensor</span>
+I, Q = uRAD.detection()
+
+<span class="comment"># 2. Bentuk Sinyal Kompleks + Windowing</span>
+complex_signal = (I + 1j * Q) * np.<span class="func">hanning</span>(200)
+
+<span class="comment"># 3. Lakukan FFT</span>
+fft_result = np.fft.<span class="func">fft</span>(complex_signal)
+magnitude = np.abs(fft_result)
+
+<span class="comment"># 4. Cari Puncak (Peak Detection)</span>
+peak_index = np.<span class="func">argmax</span>(magnitude)
+velocity = peak_index * velocity_resolution
+            </div>
+        </div>
+
+        <div id="cloud" class="detail-card">
+            <div class="detail-header">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <div>
+                    <h2>3. Telemetry: JSON & Supabase</h2>
+                    <p>Pengiriman data via Internet menggunakan protokol HTTP/REST.</p>
+                </div>
+            </div>
+
+            <h3>Struktur Data JSONB</h3>
+            <p>Untuk efisiensi, data dikirim dalam format <strong>JSONB</strong>. Array sinyal mentah (200 titik) dipacking menjadi satu objek agar database tetap ringan.</p>
+
+            <div class="code-block">
+{
+  <span class="string">"timestamp"</span>: <span class="string">"2025-10-24T10:00:00Z"</span>,
+  <span class="string">"velocity"</span>: 1.25,
+  <span class="string">"discharge"</span>: 12.5,
+  <span class="string">"raw_json"</span>: {
+    <span class="string">"raw_i"</span>: [2048, 2100, 1950, ...],
+    <span class="string">"range_fft"</span>: [0, 5, 10, 100, ...],
+    <span class="string">"doppler_spec"</span>: [0, 0, 50, 10, ...] 
+  }
+}
+            </div>
+        </div>
+
+        <div id="web" class="detail-card">
+            <div class="detail-header">
+                <i class="fas fa-laptop-code"></i>
+                <div>
+                    <h2>4. Visualization: Web Client</h2>
+                    <p>Rendering data real-time di browser pengguna.</p>
+                </div>
+            </div>
+
+            <h3>Rendering Grafik (Chart.js)</h3>
+            <p>Website mengambil JSON dari Supabase dan menggambar ulang Canvas HTML5 60 kali per detik (pada mode simulasi).</p>
+
+            <div class="code-block">
+<span class="keyword">const</span> ctx = document.<span class="func">getElementById</span>(<span class="string">'chart'</span>);
+
+<span class="keyword">new</span> Chart(ctx, {
+    type: <span class="string">'line'</span>,
+    data: {
+        labels: json.timestamp,
+        datasets: [{
+            label: <span class="string">'Kecepatan Air'</span>,
+            data: json.velocity,
+            borderColor: <span class="string">'#93DCEC'</span>,
+            fill: <span class="keyword">true</span>
+        }]
+    }
+});
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function showDetail(id, element) {
+            // 1. Hide all cards
+            document.querySelectorAll('.detail-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            // 2. Show selected card
+            document.getElementById(id).classList.add('active');
+
+            // 3. Update Visual Pipeline Icons
+            document.querySelectorAll('.node').forEach(node => {
+                node.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+    </script>
+
+</body>
+</html>

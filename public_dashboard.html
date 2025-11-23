@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Public Dashboard - SERABI</title>
+    <link rel="stylesheet" href="css/style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/lang.js"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">SERABI</a>
+            <ul class="nav-links">
+                <li><a href="index.html" data-i18n="nav_home">Beranda</a></li>
+                <li><a href="visualization.html" data-i18n="nav_learn">Pelajari Selengkapnya</a></li>
+                <li><a href="public_dashboard.html" class="active" data-i18n="nav_dash">Dashboard Publik</a></li>
+                <li><a href="visualization.html" data-i18n="nav_vis">Visualisasi</a></li>
+                <li><a href="login.html" class="btn-login" data-i18n="nav_login">Login</a></li>
+                <li><button id="lang-toggle" class="lang-btn">EN</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        
+        <header class="hero-section" style="padding: 30px; margin-bottom: 20px;">
+            <div class="hero-content">
+                <h1>Data Historis Sungai</h1>
+                <p>Akses terbuka data pemantauan debit dan kecepatan air.</p>
+            </div>
+        </header>
+
+        <section class="controls-bar">
+            <div class="control-group">
+                <label>Filter Tanggal:</label>
+                <input type="date" id="dateFilter">
+            </div>
+
+            <div class="control-group">
+                <input type="text" id="searchInput" placeholder="Cari data...">
+                <select id="rowsPerPage">
+                    <option value="10">10 Baris</option>
+                    <option value="25">25 Baris</option>
+                    <option value="50">50 Baris</option>
+                </select>
+            </div>
+
+            <button onclick="downloadCSV()" class="btn-export">
+                📥 Download CSV
+            </button>
+        </section>
+
+        <section class="table-card">
+            <div id="loading-indicator" style="text-align:center; padding:20px; color:#666;">
+                Memuat data...
+            </div>
+            
+            <table id="dataTable" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>Waktu (Timestamp)</th>
+                        <th>Kecepatan (m/s)</th>
+                        <th>Debit (m³/s)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    </tbody>
+            </table>
+
+            <div class="pagination">
+                <button id="prevBtn" class="page-btn" onclick="changePage(-1)">Prev</button>
+                <span id="pageInfo">Page 1</span>
+                <button id="nextBtn" class="page-btn" onclick="changePage(1)">Next</button>
+            </div>
+        </section>
+
+    </div>
+
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h3 class="footer-brand">SERABI</h3>
+                <p class="footer-desc">Sistem Estimasi Debit Air Sungai Berbasis Radar.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Navigasi</h4>
+                <ul class="footer-links">
+                    <li><a href="index.html">Beranda</a></li>
+                    <li><a href="public_dashboard.html">Dashboard Publik</a></li>
+                </ul>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 River Monitoring System.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="js/public_dashboard.js"></script>
+</body>
+</html>

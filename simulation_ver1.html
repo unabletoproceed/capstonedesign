@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radar Simulation - SERABI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/simulation_ver1.css"> <!-- New CSS file -->
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">SERABI Sim</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Kembali ke Beranda</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="sim-container">
+        
+        <!-- HEADER -->
+        <header class="sim-header">
+            <h1>Laboratorium Virtual Radar</h1>
+            <p>Simulasikan hubungan antara Curah Hujan, Kecepatan Arus, dan Sinyal Doppler.</p>
+        </header>
+
+        <div class="sim-grid">
+            
+            <!-- LEFT: THE VISUAL CANVAS -->
+            <div class="sim-card visual-area">
+                <canvas id="riverCanvas"></canvas>
+                <div class="overlay-text">
+                    Sensor uRAD (24GHz)
+                    <div class="sensor-box"></div>
+                </div>
+            </div>
+
+            <!-- RIGHT: CONTROLS & DATA -->
+            <div class="sim-sidebar">
+                
+                <!-- 1. METRICS DISPLAY -->
+                <div class="sim-card metrics-card">
+                    <h3>Real-Time Calculation</h3>
+                    <div class="metric-row">
+                        <span>Water Level (H):</span>
+                        <strong id="val-level">0.00 m</strong>
+                    </div>
+                    <div class="metric-row">
+                        <span>Cross Section (A):</span>
+                        <strong id="val-area">0.00 m²</strong>
+                    </div>
+                    <div class="metric-row highlight">
+                        <span>Discharge (Q):</span>
+                        <strong id="val-discharge">0.00 m³/s</strong>
+                    </div>
+                </div>
+
+                <!-- 2. OSCILLOSCOPE (DOPPLER VISUALIZER) -->
+                <div class="sim-card scope-card">
+                    <h3>Radar IF Signal (Doppler)</h3>
+                    <canvas id="scopeCanvas"></canvas>
+                    <p class="tiny-note">Higher Speed = Higher Frequency</p>
+                </div>
+
+                <!-- 3. SLIDERS -->
+                <div class="sim-card controls-card">
+                    
+                    <!-- Rain Control -->
+                    <div class="control-group">
+                        <label>🌧️ Curah Hujan (Rainfall)</label>
+                        <input type="range" id="sliderRain" min="0" max="100" value="0">
+                    </div>
+
+                    <!-- Speed Control -->
+                    <div class="control-group">
+                        <label>🌊 Kecepatan Arus (Velocity)</label>
+                        <input type="range" id="sliderSpeed" min="0" max="5" step="0.1" value="0.5">
+                        <span class="val-display" id="dispSpeed">0.5 m/s</span>
+                    </div>
+
+                    <!-- Width Control -->
+                    <div class="control-group">
+                        <label>📏 Lebar Sungai (Width)</label>
+                        <input type="range" id="sliderWidth" min="2" max="20" step="0.5" value="5">
+                        <span class="val-display" id="dispWidth">5.0 m</span>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="js/simulation_ver1.js"></script>
+</body>
+</html>

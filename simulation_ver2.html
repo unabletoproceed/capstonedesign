@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radar Simulation - SERABI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/simulation_ver2.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">SERABI</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Beranda</a></li>
+                <li><a href="simulation.html" class="active">Simulasi</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="sim-container">
+        <header class="sim-header">
+            <h1>Laboratorium Virtual Radar</h1>
+            <p>Simulasi interaktif pengaruh sudut, hujan, dan pemrosesan sinyal terhadap akurasi radar.</p>
+        </header>
+
+        <div class="game-wrapper">
+            
+            <!-- CANVAS AREA -->
+            <div class="canvas-box">
+                <canvas id="simCanvas"></canvas>
+                
+                <!-- Heads Up Display (HUD) -->
+                <div class="overlay-stats">
+                    <div class="hud-item">
+                        <span class="hud-label">TARGET</span>
+                        <span class="hud-value" id="val-target">WATER</span>
+                    </div>
+                    <div class="hud-item">
+                        <span class="hud-label">DETECTED V</span>
+                        <span class="hud-value" id="val-vel">0.00 m/s</span>
+                    </div>
+                    <div class="hud-item">
+                        <span class="hud-label">SIGNAL QUALITY</span>
+                        <span class="hud-value" id="val-snr">100%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTROLS AREA -->
+            <div class="controls-box">
+                
+                <!-- 1. Environment -->
+                <div class="control-group">
+                    <h3>🌊 Kondisi Sungai & Cuaca</h3>
+                    <label>Lebar Sungai (m) - Untuk Debit</label>
+                    <input type="range" id="slider-width" min="5" max="50" step="1" value="20">
+                    
+                    <label>Intensitas Hujan (Noise)</label>
+                    <input type="range" id="slider-rain" min="0" max="100" value="0">
+                </div>
+
+                <!-- 2. Radar Geometry -->
+                <div class="control-group">
+                    <h3>📡 Geometri Radar</h3>
+                    <label>Sudut Depresi (Tilt Angle)</label>
+                    <div class="slider-wrapper">
+                        <span>0° (Datar)</span>
+                        <input type="range" id="slider-angle" min="0" max="90" value="45">
+                        <span>90° (Bawah)</span>
+                    </div>
+                    <p style="font-size: 0.8rem; color: #666; margin-top: 5px;">
+                        *Sudut optimal untuk uRAD: 30° - 60°
+                    </p>
+                </div>
+
+                <!-- 3. Signal Processing -->
+                <div class="control-group">
+                    <h3>⚙️ Signal Processing</h3>
+                    <label>Noise Threshold (CFAR)</label>
+                    <input type="range" id="slider-threshold" min="0" max="100" value="15">
+                    
+                    <!-- Live Scope -->
+                    <div class="signal-scope">
+                        <canvas id="scopeCanvas"></canvas>
+                    </div>
+                    <div class="scope-label">FFT Signal Amplitude vs Noise Floor</div>
+                </div>
+
+                <!-- 4. Result -->
+                <div class="result-box">
+                    <h4>Estimasi Debit (Q)</h4>
+                    <div class="big-q" id="val-discharge">0.00 m³/s</div>
+                    <div id="calc-formula">Q = V x Area</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="js/simulation_ver2.js"></script>
+</body>
+</html>

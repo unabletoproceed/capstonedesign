@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Management - SERABI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<div class="admin-wrapper">
+    
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <span>SERABI ADMIN</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#" class="active">📊 <span>Manajemen Data</span></a></li>
+            <li><a href="visualization.html" target="_blank">📈 <span>Lihat Grafik</span></a></li>
+            <li><a href="index.html" target="_blank">🌐 <span>Halaman Depan</span></a></li>
+            <li><a href="#" id="logoutBtn" class="logout-link">🚪 <span>Logout</span></a></li>
+        </ul>
+    </nav>
+
+    <main class="admin-content">
+        
+        <div class="admin-header">
+            <div>
+                <h1>Manajemen Data Sungai</h1>
+                <p>Tambah, Hapus, atau Monitoring Data.</p>
+            </div>
+            <div id="userInfo" style="font-weight: bold; color: var(--deep-ocean);">...</div>
+        </div>
+
+        <div class="admin-grid">
+            <div class="stat-card">
+                <h3>Total Record</h3>
+                <div class="stat-number" id="totalCount">0</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #2dce89;">
+                <h3>Status Terkini</h3>
+                <div class="stat-number" id="lastStatus" style="font-size: 1.2rem;">Checking...</div>
+            </div>
+        </div>
+
+        <div class="admin-toolbar">
+            <div class="input-group">
+                <label>Kecepatan (m/s)</label>
+                <input type="number" id="inVelocity" step="0.01" placeholder="0.5">
+            </div>
+            <div class="input-group">
+                <label>Debit (m³/s)</label>
+                <input type="number" id="inDischarge" step="0.01" placeholder="10.5">
+            </div>
+            <button id="addDataBtn" class="btn-add">➕ Tambah Data Manual</button>
+        </div>
+
+        <section class="table-card">
+            <h3 style="margin-top:0; color:var(--deep-ocean);">Data Log (50 Terakhir)</h3>
+            
+            <table id="adminTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Waktu</th>
+                        <th>Velocity</th>
+                        <th>Discharge</th>
+                        <th class="action-th">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTableBody">
+                    </tbody>
+            </table>
+        </section>
+
+    </main>
+</div>
+
+<script type="module" src="js/admin.js"></script>
+
+</body>
+</html>

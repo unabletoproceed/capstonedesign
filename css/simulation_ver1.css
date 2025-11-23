@@ -1,0 +1,124 @@
+/* css/simulation.css */
+
+.sim-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.sim-header {
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--deep-ocean);
+}
+
+.sim-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* Canvas is big, Controls are small */
+    gap: 20px;
+    height: 700px;
+}
+
+.sim-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border: 1px solid rgba(147, 220, 236, 0.3);
+}
+
+/* LEFT SIDE: CANVAS */
+.visual-area {
+    position: relative;
+    padding: 0; /* Let canvas touch edges */
+    overflow: hidden;
+    background: linear-gradient(to bottom, #e0f7fa 0%, #ffffff 50%); /* Sky effect */
+}
+
+#riverCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.overlay-text {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,0.8);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--deep-ocean);
+    text-align: center;
+}
+
+.sensor-box {
+    width: 40px;
+    height: 20px;
+    background: #333;
+    margin: 5px auto 0;
+    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* RIGHT SIDE: CONTROLS */
+.sim-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Metrics */
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: #555;
+}
+.metric-row.highlight {
+    background: #f0fdf4;
+    padding: 10px;
+    border-radius: 8px;
+    color: #2dce89;
+    border: 1px solid #bbf7d0;
+}
+
+/* Oscilloscope */
+.scope-card {
+    background: #000;
+    color: #0f0;
+    padding: 10px;
+}
+.scope-card h3 {
+    margin: 0 0 5px 0;
+    font-size: 0.8rem;
+    color: #fff;
+    opacity: 0.7;
+}
+#scopeCanvas {
+    width: 100%;
+    height: 80px;
+    border: 1px solid #333;
+}
+.tiny-note {
+    font-size: 0.7rem;
+    color: #666;
+    margin: 5px 0 0 0;
+    text-align: right;
+}
+
+/* Sliders */
+.control-group { margin-bottom: 20px; }
+.control-group label { display: block; font-weight: bold; font-size: 0.9rem; margin-bottom: 8px; color: var(--deep-ocean); }
+.control-group input { width: 100%; cursor: pointer; }
+.val-display { float: right; font-size: 0.85rem; color: var(--water-dark); font-weight: bold; }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .sim-grid { grid-template-columns: 1fr; height: auto; }
+    .visual-area { height: 400px; }
+}

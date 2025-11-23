@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Visualization - SERABI</title>
+    <link rel="stylesheet" href="css/style.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">SERABI</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Beranda</a></li>
+                <li><a href="public_dashboard.html">Dashboard Publik</a></li>
+                <li><a href="visualization.html" class="active">Visualisasi</a></li>
+                <li><a href="login.html" class="btn-login">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+
+        <div class="mode-selector-card">
+            <div class="mode-text">
+                <h3>Sumber Data</h3>
+                <p id="mode-desc">Menampilkan data HISTORIS dari sensor lapangan.</p>
+            </div>
+            
+            <div class="toggle-wrapper">
+                <span class="toggle-label">REAL SITE</span>
+                <label class="switch">
+                    <input type="checkbox" id="simToggle">
+                    <span class="slider round"></span>
+                </label>
+                <span class="toggle-label">SIMULATION</span>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="card">
+                <h3>Kecepatan Arus</h3>
+                <div class="big-number" id="live-vel">0.00 <small>m/s</small></div>
+            </div>
+            <div class="card">
+                <h3>Estimasi Debit</h3>
+                <div class="big-number" id="live-dis">0.00 <small>m³/s</small></div>
+            </div>
+            <div class="card" id="alert-card">
+                <h3>Status Banjir</h3>
+                <div class="status-badge safe" id="flood-status">AMAN</div>
+            </div>
+        </div>
+
+        <div class="card chart-card" style="margin-top: 20px;">
+            <h3>Monitoring Real-Time (Live Trend)</h3>
+            <div class="chart-container">
+                <canvas id="realtimeChart"></canvas>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 40px 0 20px;">
+            <button id="techToggleBtn" class="btn-tech">
+                🛠️ Tampilkan Analisis Sinyal Lengkap (Debug Mode)
+            </button>
+        </div>
+
+        <div id="tech-dashboard" class="tech-grid" style="display: none;">
+            
+            <div class="card tech-card">
+                <h4>1. Sinyal Mentah (Fast Time)</h4>
+                <div class="tech-chart-box">
+                    <canvas id="chartRaw"></canvas>
+                </div>
+            </div>
+
+            <div class="card tech-card">
+                <h4>2. Range FFT (Posisi Target)</h4>
+                <div class="tech-chart-box">
+                    <canvas id="chartRange"></canvas>
+                </div>
+            </div>
+
+            <div class="card tech-card">
+                <h4>3. History Magnitudo</h4>
+                <div class="tech-chart-box">
+                    <canvas id="chartMag"></canvas>
+                </div>
+            </div>
+
+            <div class="card tech-card">
+                <h4>4. History Fasa (Stabilitas)</h4>
+                <div class="tech-chart-box">
+                    <canvas id="chartPhase"></canvas>
+                </div>
+            </div>
+
+            <div class="card tech-card wide-card">
+                <h4>5. Spektrum Doppler (Analisis Kecepatan)</h4>
+                <div class="tech-chart-box">
+                    <canvas id="chartDoppler"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h3 class="footer-brand">SERABI</h3>
+                <p class="footer-desc">Sistem Estimasi Debit Air Sungai Berbasis Radar.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="js/visualization.js"></script>
+</body>
+</html>
