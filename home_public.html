@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Info Banjir - SERABI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/public.css">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">SERABI Public</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Menu Utama</a></li>
+                <li><a href="login.html" class="btn-login">Login Petugas</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="public-container">
+        
+        <!-- STATUS HEADER -->
+        <div class="status-header">
+            <p>Status Sungai Saat Ini:</p>
+            <h1 id="status-title">MEMUAT DATA...</h1>
+            <div id="status-badge" class="badge-pill">Checking...</div>
+        </div>
+
+        <!-- ANIMATION BOX -->
+        <div class="scene-box" id="scene-box">
+            <!-- Sky Elements -->
+            <div class="sun"></div>
+            <div class="rain-container" id="rain-layer"></div>
+
+            <!-- Water Elements -->
+            <div class="water-back"></div>
+            
+            <!-- Characters/Objects -->
+            <div class="swimmer" id="swimmer-icon">
+                <i class="fas fa-swimmer"></i>
+                <div class="splash"></div>
+            </div>
+
+            <div class="warning-sign" id="warning-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>DILARANG BERENANG</span>
+            </div>
+
+            <div class="water-front"></div>
+        </div>
+
+        <!-- ADVICE CARD -->
+        <div class="advice-card">
+            <h2 id="advice-title">Mohon Tunggu...</h2>
+            <p id="advice-desc">Sedang mengambil data terbaru dari sensor uRAD.</p>
+            
+            <div class="meta-info">
+                <div>
+                    <i class="fas fa-ruler-vertical"></i> Debit: 
+                    <strong id="val-discharge">-</strong> m³/s
+                </div>
+                <div>
+                    <i class="fas fa-clock"></i> Update: 
+                    <span id="val-time">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- WHATSAPP WIDGET -->
+        <a href="https://wa.me/?text=Info%20Banjir%20SERABI:%20Saya%20ingin%20laporan%20terkini." target="_blank" class="wa-float">
+            <i class="fab fa-whatsapp"></i> Dapatkan Notifikasi WA
+        </a>
+
+    </div>
+
+    <script type="module" src="js/home_public.js"></script>
+</body>
+</html>
