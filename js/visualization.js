@@ -36,6 +36,7 @@ toggleBtn.addEventListener('change', (e) => {
         modeDesc.innerHTML = "Mode: <strong>REAL SITE</strong>. Data historis dari sensor.";
         modeDesc.style.color = "#525f7f";
     }
+    velDisplay.innerHTML = "...";
     refreshData(); // Instant refresh
 });
 
