@@ -1,0 +1,113 @@
+/* css/portal.css */
+
+/* Initially Hidden */
+.portal-container {
+    opacity: 0;
+    visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 20; /* Must be higher than water */
+    transition: opacity 1s ease-in-out;
+}
+
+/* When Active (Added by JS) */
+.portal-container.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Header Styling */
+.portal-header {
+    text-align: center;
+    color: white;
+    margin-bottom: 40px;
+    transform: translateY(20px);
+    animation: floatUp 1s ease 0.5s forwards;
+}
+
+.portal-header h1 {
+    font-size: 3.5rem;
+    margin: 0;
+    letter-spacing: 3px;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.portal-header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-top: 10px;
+}
+
+/* Grid Layout */
+.role-grid {
+    display: flex;
+    gap: 25px;
+    z-index: 30;
+}
+
+/* Glassmorphism Cards */
+.role-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    width: 240px;
+    padding: 40px 20px;
+    border-radius: 20px;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Hover Effects */
+.role-card:hover {
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateY(-15px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.role-card:hover h3, 
+.role-card:hover p {
+    color: #0A3D52; /* Deep Ocean Blue */
+}
+
+.role-card:hover .icon-box {
+    color: #0A3D52;
+    transform: scale(1.1);
+}
+
+.icon-box {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: #fff;
+    transition: all 0.3s;
+}
+
+.role-card h3 { font-size: 1.4rem; margin-bottom: 10px; }
+.role-card p { font-size: 0.9rem; opacity: 0.8; line-height: 1.5; }
+
+.portal-footer {
+    margin-top: 50px;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.8rem;
+}
+
+/* Animation Keyframes */
+@keyframes floatUp {
+    to { transform: translateY(0); }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .role-grid { flex-direction: column; }
+    .role-card { width: 200px; padding: 20px; }
+}

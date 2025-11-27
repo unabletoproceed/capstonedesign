@@ -1,220 +1,55 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>River Monitoring System</title>
-
-    <link rel="stylesheet" href="css/style.css" />
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <script src="js/lang.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selamat Datang - SERABI</title>
+    <link rel="stylesheet" href="css/loading.css"> <link rel="stylesheet" href="css/portal.css">   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="index.html" class="logo">SERABI</a>
-            
-            <ul class="nav-links">
-                <li><a href="index.html" class="active" data-i18n="nav_home">Beranda</a></li>
-                <li><a href="learn_more.html" data-i18n="nav_learn">Pelajari Selengkapnya</a></li>
-                <li><a href="public_dashboard.html" data-i18n="nav_dash">Dasbor Publik</a></li>
-                <li><a href="visualization.html" data-i18n="nav_vis">Visualisasi</a></li>
-                <li><a href="login.html" class="btn-login" data-i18n="nav_login">Login</a></li>
-                <li><button id="lang-toggle" class="lang-btn">EN</button></li>
-            </ul>
-        </div>
-    </nav>
-    <div class="dashboard-container">
-        
-        <header class="hero-section">
-            <div class="hero-content">
-                <h1 data-i18n="hero_title">Sistem Estimasi Debit Air Sungai Berbasis Radar untuk Mendukung Mitigasi Dini Banjir</h1>
-                <p data-i18n="hero_desc">Monitoring kecepatan arus dan debit sungai berbasis radar & IoT.</p>
-            </div>
-        </header>
+    <div class="loading-text" id="loadingText">memuat...</div>
 
-        <section class="system-section">
-            <h2 class="section-title" data-i18n="system_title">Cara Kerja Sistem</h2>
-    
-            <div class="system-container">
-                <div class="video-wrapper">
-                    <video controls poster="assets/images/video-thumb.jpg">
-                        <source src="assets/videos/demo.mp4" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                    <p class="video-caption">Demo: Simulasi Deteksi Radar di Lab</p>
-                </div>
-
-                <div class="steps-wrapper">
-                    <div class="step-item">
-                        <div class="step-number">1</div>
-                        <div class="step-content">
-                            <h4>Radar Sensing (uRAD)</h4>
-                            <p>Gelombang 24GHz dipancarkan ke permukaan air. Sinyal pantulan ditangkap untuk mengukur <strong>Doppler Shift</strong>.</p>
-                        </div>
-                    </div>
-
-                    <div class="step-item">
-                        <div class="step-number">2</div>
-                        <div class="step-content">
-                            <h4>Data Processing (Raspberry Pi)</h4>
-                            <p>Algoritma FFT (Fast Fourier Transform) memisahkan sinyal murni kecepatan air dari noise lingkungan.</p>
-                        </div>
-                    </div>
-
-                    <div class="step-item">
-                        <div class="step-number">3</div>
-                        <div class="step-content">
-                            <h4>Visualization (Web Dashboard)</h4>
-                            <p>Data dikirim via HTTP Request ke database Supabase dan ditampilkan secara Real-Time.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="cta-section">
-            <div class="cta-content">
-                <p data-i18n="cta_text">Ingin mengetahui detail teknis tentang pengolahan sinyal radar dan FFT?</p>
-                <a href="visualization.html" class="cta-link" data-i18n="cta_btn">
-                    Ketuk Pelajari Selengkapnya &rarr;
-                </a>
-            </div>
-        </section>
-
-        <h2 class="section-title" style="margin-top: 40px;">Dasbor Langsung</h2>
-
-        <section class="stats-grid">
-            <div class="card status-card">
-                <h3 data-i18n="status_title">Status Terkini</h3>
-                <div id="latest-status" class="status-value" data-i18n="status_loading">Memuat data...</div>
-                <div class="status-indicator"><span class="dot"></span> Live</div>
-            </div>
-            
-            <div class="card map-card">
-                <h3 data-i18n="map_title">Lokasi Sungai</h3>
-                <div id="map" style="height: 400px; width: 100%; z-index: 1; position: relative;"></div>
-            </div>
-        </section>
-
-        <section class="charts-grid">
-            <div class="card chart-card">
-                <h3 data-i18n="chart_vel_title">Grafik Kecepatan (1 Jam Terakhir)</h3>
-                <div class="chart-container">
-                    <canvas id="velocityChart"></canvas>
-                </div>
-            </div>
-            <div class="card chart-card">
-                <h3 data-i18n="chart_dis_title">Grafik Debit (1 Jam Terakhir)</h3>
-                <div class="chart-container">
-                    <canvas id="dischargeChart"></canvas>
-                </div>
-            </div>
-        </section>
-
+    <div class="water">
+        <div class="wave wave1"></div>
+        <div class="wave wave2"></div>
+        <div class="wave wave3"></div>
     </div>
 
-    <section class="team-section">
-        <h2 class="section-title" data-i18n="team_title">Tim Pengembang</h2>
-    
-        <h3 class="team-subtitle">Dosen Pembimbing</h3>
-        <div class="team-grid supervisors">
-            <div class="team-card">
-                <div class="avatar">
-                    <img src="assets/images/lecturer1.jpg" alt="Dosen 1"> </div>
-                <h4>Prof. Dr. Aloysius Adya Pramudita, S.T., M.T.</h4>
-                <p>Pembimbing Utama</p>
-            </div>
-            <div class="team-card">
-                <div class="avatar">
-                    <img src="assets/images/lecturer2.jpg" alt="Dosen 2">
-                </div>
-                <h4>Arif Abdul Aziz, S.Si., M.Sc., Ph.D. </h4>
-                <p>Pembimbing Pendamping</p>
-            </div>
-        </div>
-
-        <h3 class="team-subtitle">Tim Mahasiswa</h3>
-        <div class="team-grid students">
-            <div class="team-card">
-                <div class="avatar">
-                    <img src="assets/images/student1.jpg" alt="Student 1">
-                </div>
-                <h4>Lutvi Adam Harahap</h4>
-                <p>Lead System Integrator</p>
-            </div>
-            <div class="team-card">
-                <div class="avatar">
-                    <img src="assets/images/student2.jpg" alt="Student 2">
-                </div>
-                <h4>Indah Delita Permatasari</h4>
-                <p>System Verification Lead</p>
-            </div>
-            <div class="team-card">
-                <div class="avatar">
-                    <img src="assets/images/student3.jpg" alt="Student 3">
-                </div>
-                <h4>Arnoldus Gratio Darryl Andyka</h4>
-                <p>Hardware Implementation Lead</p>
-            </div>
-            <div class="team-card">
-                <div class="avatar">
-                    <img src="assets/images/student4.jpg" alt="Student 4">
-                </div>
-                <h4>Husna Firyal Az-Zahra</h4>
-                <p>Full Stack IoT Developer</p>
-            </div>
-        </div>
-    </section>
-
-    <footer class="main-footer">
-        <div class="footer-container">
+    <div class="portal-container" id="portalLayer">
         
-            <div class="footer-col">
-                <h3 class="footer-brand">SERABI</h3>
-                <p class="footer-desc">
-                    Sistem Estimasi Debit Air Sungai Berbasis Radar.<br>
-                    Proyek Akhir S1 Teknik Telekomunikasi.
-                </p>
-                <div class="uni-badge">
-                    <img src="assets/images/telkom-logo.png" alt="Telkom University" style="height: 40px;">
-                </div>
-            </div>
+        <header class="portal-header">
+            <h1>SERABI</h1>
+            <p>Sistem Estimasi Debit Air Sungai Berbasis Radar</p>
+        </header>
 
-            <div class="footer-col">
-                <h4>Navigasi</h4>
-                <ul class="footer-links">
-                    <li><a href="index.html">Beranda</a></li>
-                    <li><a href="public_dashboard.html">Dashboard Publik</a></li>
-                    <li><a href="visualization.html">Visualisasi Data</a></li>
-                    <li><a href="login.html">Login Admin</a></li>
-                </ul>
-            </div>
+        <div class="role-grid">
+            
+            <a href="home_public.html" class="role-card">
+                <div class="icon-box"><i class="fas fa-users"></i></div>
+                <h3>Masyarakat Umum</h3>
+                <p>Status keamanan sungai & peringatan banjir.</p>
+            </a>
 
-            <div class="footer-col">
-                <h4>Hubungi Kami</h4>
-                <ul class="contact-list">
-                    <li>📍 <strong>Telkom University</strong><br>Jl. Telekomunikasi No. 1, Terusan Buahbatu, Bandung 40257</li>
-                    <li>📧 husnafrylazz@student.telkomuniversity.ac.id</li>
-                </ul>
-            </div>
+            <a href="home.html" class="role-card">
+                <div class="icon-box"><i class="fas fa-graduation-cap"></i></div>
+                <h3>Mahasiswa</h3>
+                <p>Data mentah, grafik FFT & simulasi radar.</p>
+            </a>
+
+            <a href="login.html" class="role-card">
+                <div class="icon-box"><i class="fas fa-user-shield"></i></div>
+                <h3>Petugas</h3>
+                <p>Manajemen data & log insiden.</p>
+            </a>
+
         </div>
 
-        <div class="footer-bottom">
-            <p>&copy; 2025 River Monitoring System. All Rights Reserved.</p>
-            <p class="credits">Designed for Capstone Design Project</p>
-        </div>
-    </footer>
+        <footer class="portal-footer">
+            © 2025 Capstone Design - Telkom University
+        </footer>
+    </div>
 
-    <script type="module" src="js/main.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <script type="module" src="js/main.js"></script>
+    <script src="js/loading.js"></script>
 </body>
 </html>

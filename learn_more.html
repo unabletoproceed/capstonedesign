@@ -7,8 +7,8 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <style>
-        /* --- PIPELINE STYLES (Embedded for ease) --- */
+    <<style>
+        /* --- PIPELINE STYLES (FIXED) --- */
         .pipeline-container {
             background: var(--white);
             padding: 40px 20px;
@@ -21,33 +21,37 @@
         .pipeline-wrapper {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            min-width: 800px; /* Ensure it doesn't squish on mobile */
+            /* CHANGED: Align to top (flex-start) so text doesn't pull the center down */
+            align-items: flex-start; 
+            min-width: 800px; 
             position: relative;
+            /* Add padding to give room for the hover "pop up" effect */
+            padding-top: 10px; 
         }
 
         /* The Connecting Line */
         .pipeline-line {
             position: absolute;
-            top: 50%;
+            /* FIXED: 10px padding + 35px (half of 70px icon) = 45px */
+            top: 45px; 
             left: 50px;
             right: 50px;
             height: 4px;
             background: #e0e0e0;
             z-index: 0;
-            transform: translateY(-50%);
         }
 
         /* Animated Data Packet */
         .data-packet {
             position: absolute;
-            top: 50%;
+            /* FIXED: Match the line position */
+            top: 45px; 
             left: 0;
             width: 12px;
             height: 12px;
             background: var(--water-dark);
             border-radius: 50%;
-            transform: translateY(-50%);
+            transform: translateY(-50%); /* Centers the dot on the line */
             z-index: 1;
             animation: flowData 4s linear infinite;
             box-shadow: 0 0 10px var(--water-light);
@@ -85,6 +89,8 @@
             font-size: 28px;
             color: #888;
             transition: all 0.3s;
+            /* Ensure border calculation is consistent */
+            box-sizing: border-box; 
         }
 
         /* Active State */
@@ -103,7 +109,7 @@
             border-radius: 15px;
             padding: 40px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            display: none; /* Hidden by default */
+            display: none;
             animation: fadeIn 0.5s ease;
         }
 
@@ -118,12 +124,8 @@
             padding-bottom: 20px;
         }
 
-        .detail-header i {
-            font-size: 3rem;
-            color: var(--water-dark);
-        }
+        .detail-header i { font-size: 3rem; color: var(--water-dark); }
 
-        /* Code Block Styling */
         .code-block {
             background: #1e1e1e;
             color: #d4d4d4;
@@ -136,10 +138,10 @@
             border-left: 4px solid var(--water-dark);
         }
 
-        .keyword { color: #569cd6; } /* Blue */
-        .string { color: #ce9178; } /* Orange */
-        .comment { color: #6a9955; } /* Green */
-        .func { color: #dcdcaa; } /* Yellow */
+        .keyword { color: #569cd6; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; }
+        .func { color: #dcdcaa; }
 
         .math-box {
             background: #fff9c4;
@@ -150,7 +152,6 @@
             font-size: 1.2rem;
             font-style: italic;
         }
-
     </style>
 </head>
 <body>
