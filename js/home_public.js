@@ -19,7 +19,7 @@ async function updatePublicStatus() {
     try {
         // Fetch only the absolute latest data point
         const { data, error } = await supabase
-            .from('river_data_real') // Use REAL table
+            .from('radar_data') // Use REAL table
             .select('discharge, timestamp')
             .order('timestamp', { ascending: false })
             .limit(1);

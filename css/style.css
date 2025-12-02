@@ -77,6 +77,10 @@ body {
     max-width: 1200px;
     margin: 30px auto;
     padding: 0 20px;
+    padding-bottom: 100px; 
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
 }
 
 .hero-section {
@@ -1147,3 +1151,17 @@ input:checked + .slider:before { transform: translateX(26px); }
 
 .action-th { width: 100px; text-align: center; }
 .action-td { text-align: center; }
+
+#rippleCanvas {
+    position: fixed; /* Tetap di tempat saat scroll */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Taruh di paling belakang */
+    pointer-events: none; /* Agar kita tetap bisa klik tombol di depannya */
+    
+    /* Gradient Laut Dalam agar riak terlihat jelas */
+    /* Ganti background-color body lama dengan ini jika mau */
+    background: linear-gradient(to bottom, #f4f9fb 0%, #e0f2f7 100%);
+}
