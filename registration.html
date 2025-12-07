@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrasi - SERABI</title>
+    <link rel="stylesheet" href="css/style.css"> <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #AEE6F9; /* Sama dengan tema SERABI */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .register-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            width: 100%;
+            max-width: 450px;
+            transition: transform 0.3s ease;
+        }
+
+        .register-container:hover {
+            transform: translateY(-6px);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        /* Jika kamu punya logo, simpan di folder assets */
+        .logo img {
+            width: 120px;
+            opacity: 0.95;
+            transition: 0.3s ease;
+        }
+
+        h2 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 25px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: 0.2s;
+            box-sizing: border-box; /* Agar padding tidak melebarkan input */
+        }
+
+        .form-group input:hover {
+            border-color: #80bdff;
+        }
+
+        .form-group input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.20rem rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+
+        .form-group button {
+            width: 100%;
+            padding: 12px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            transition: 0.2s ease;
+        }
+
+        .form-group button:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #444;
+        }
+
+        .login-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .validation-msg {
+            font-size: 0.8em;
+            color: #dc3545;
+            min-height: 18px;
+            margin-top: 5px;
+        }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+    <div class="register-container">
+
+        <div class="logo">
+            <h1 style="color: var(--deep-ocean); margin: 0;">SERABI</h1>
+        </div>
+
+        <h2>Buat Akun Baru</h2>
+
+        <form id="register-form">
+
+            <div class="form-group">
+                <label>Nama Lengkap</label>
+                <input type="text" id="fullname" required placeholder="Contoh: Budi Santoso">
+                <div id="fullname-validate" class="validation-msg"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" required placeholder="email@contoh.com">
+                <div id="email-validate" class="validation-msg"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Kata Sandi</label>
+                <input type="password" id="password" required placeholder="Minimal 8 karakter">
+                <div id="pass-validate" class="validation-msg"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Konfirmasi Kata Sandi</label>
+                <input type="password" id="confirm-password" required placeholder="Ulangi kata sandi">
+                <div id="confirm-validate" class="validation-msg"></div>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" id="regBtn">Daftar Sekarang</button>
+            </div>
+
+        </form>
+
+        <div class="login-link">
+            Sudah punya akun? <a href="login.html">Masuk di sini</a>
+        </div>
+
+    </div>
+
+    <script type="module">
+        // Import konfigurasi Supabase yang sudah ada
+        import { supabase } from './js/supabase.js';
+
+        // --- VALIDASI REALTIME ---
+        
+        // 1. Validasi Nama
+        document.getElementById("fullname").addEventListener("input", function () {
+            const msg = document.getElementById("fullname-validate");
+            msg.textContent = this.value.length < 3 ? "Nama terlalu pendek (min 3 huruf)." : "";
+        });
+
+        // 2. Validasi Email
+        document.getElementById("email").addEventListener("input", function () {
+            const email = this.value;
+            const msg = document.getElementById("email-validate");
+            if (!email.includes("@") || !email.includes(".")) {
+                msg.textContent = "Format email tidak valid.";
+            } else {
+                msg.textContent = "";
+            }
+        });
+
+        // 3. Validasi Password
+        document.getElementById("password").addEventListener("input", function () {
+            const pass = this.value;
+            const msg = document.getElementById("pass-validate");
+            msg.textContent = pass.length < 6 ? "Minimal 6 karakter." : ""; // Supabase default min 6
+        });
+
+        // 4. Validasi Match Password
+        document.getElementById("confirm-password").addEventListener("input", function () {
+            const pass = document.getElementById("password").value;
+            const confirm = this.value;
+            const msg = document.getElementById("confirm-validate");
+            msg.textContent = confirm !== pass ? "Kata sandi tidak cocok." : "";
+        });
+
+        // --- SUBMIT LOGIC ---
+        document.getElementById("register-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const fullname = document.getElementById("fullname").value;
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirm-password").value;
+            const btn = document.getElementById("regBtn");
+
+            // Cek validasi akhir sebelum kirim
+            if (password !== confirmPassword) {
+                alert("Kata sandi tidak cocok!");
+                return;
+            }
+
+            btn.textContent = "Memproses...";
+            btn.disabled = true;
+
+            try {
+                // Mendaftar ke Supabase
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            full_name: fullname // Menyimpan nama di metadata user
+                        }
+                    }
+                });
+
+                if (error) throw error;
+
+                // Cek apakah butuh verifikasi email (tergantung settingan Supabase kamu)
+                if (data.session) {
+                    // Jika Auto-Confirm aktif
+                    alert("Pendaftaran berhasil! Anda akan diarahkan ke Dashboard.");
+                    window.location.href = "admin_dashboard.html";
+                } else {
+                    // Jika butuh verifikasi email
+                    alert("Pendaftaran berhasil! Silakan cek email Anda untuk verifikasi sebelum login.");
+                    window.location.href = "login.html";
+                }
+
+            } catch (err) {
+                alert("Gagal Mendaftar: " + err.message);
+                btn.textContent = "Daftar Sekarang";
+                btn.disabled = false;
+            }
+        });
+    </script>
+
+</body>
+</html>
