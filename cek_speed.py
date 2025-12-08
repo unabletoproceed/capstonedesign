@@ -4,24 +4,26 @@ import time
 import math
 
 # KONFIGURASI
-SERIAL_PORT = '/dev/ttyACM0'  # Cek apakah ACM0 atau USB0
-F0 = 5                        # Frekuensi standar
+SERIAL_PORT = '/dev/ttyACM0'
+F0 = 5                        
 C_LIGHT = 3e8
-LAMBDA = C_LIGHT / ((24.005 + F0/1000) * 1e9) # Panjang gelombang (0.0125 m)
+LAMBDA = C_LIGHT / ((24.005 + F0/1000) * 1e9) 
 
 print("="*50)
-print("   DIAGNOSA KEMAMPUAN SAMPLING RASPBERRY PI   ")
+print("    DIAGNOSA KEMAMPUAN SAMPLING RASPBERRY PI    ")
 print("="*50)
 
 try:
     # 1. Buka Serial
     ser = serial.Serial(SERIAL_PORT, baudrate=int(1e6), timeout=3)
     
-    # 2. Nyalakan Radar di Mode 2 (Raw Data - Mode Terberat)
+    # 2. Nyalakan Radar
     uRAD_USB_SDK11.turnON(ser)
-    uRAD_USB_SDK11.loadConfiguration(ser, mode=2, f0=F0, bw=240, ns=200, ntar=1, rmax=100, 
-                                     mti=0, mth=0, alpha=10, distance_true=False, velocity_true=False, 
-                                     snr_true=True, i_true=True, q_true=True, movement_true=False)
+    
+    # PERBAIKAN: Semua parameter menggunakan HURUF BESAR sesuai SDK
+    uRAD_USB_SDK11.loadConfiguration(ser, mode=2, f0=F0, BW=240, Ns=200, Ntar=1, Rmax=100, 
+                                     MTI=0, Mth=0, Alpha=10, distance_true=False, velocity_true=False, 
+                                     SNR_true=True, I_true=True, Q_true=True, movement_true=False)
     
     print("\n[INFO] Radar Aktif. Memulai Stress Test...")
     print("[INFO] Mengambil 100 sampel secepat mungkin...")
@@ -33,13 +35,13 @@ try:
     for i in range(100):
         t_loop_start = time.time()
         
-        # Ambil data (Fungsi ini yang memakan waktu paling lama)
+        # Ambil data
         uRAD_USB_SDK11.detection(ser)
         
         t_loop_end = time.time()
         timestamps.append(t_loop_end - t_loop_start)
         
-        # Print progress bar kecil
+        # Print progress bar
         if i % 10 == 0: print(".", end="", flush=True)
 
     total_duration = time.time() - start_total
@@ -49,8 +51,7 @@ try:
     avg_dt = sum(timestamps) / len(timestamps) # Rata-rata waktu per data
     real_hz = 1.0 / avg_dt                     # Sampling Rate (Hz)
     
-    # Hitung Batas Nyquist (Kecepatan Maksimum Air yang bisa dibaca)
-    # Rumus: Vmax = Lambda / (4 * dt)
+    # Batas Nyquist (Vmax)
     v_max_theoretical = LAMBDA / (4 * avg_dt)
     
     print("-" * 50)
@@ -63,16 +64,16 @@ try:
     print(f"Maksimal Flow Air: {v_max_theoretical:.4f} m/s")
     print("-" * 50)
     
-    # 5. KESIMPULAN OTOMATIS
+    # 5. KESIMPULAN
     if v_max_theoretical < 0.2:
         print("KESIMPULAN: MERAH (BAHAYA)")
-        print("Sistem terlalu lambat untuk sungai. Gunakan Hybrid Mode/Internal Processing.")
+        print("Sistem terlalu lambat. Gunakan metode Mode 1 (Hybrid).")
     elif v_max_theoretical < 1.0:
         print("KESIMPULAN: KUNING (WASPADA)")
-        print("Bisa untuk air lambat, tapi air deras akan error (aliasing).")
+        print("Aman untuk air tenang, kurang akurat untuk air deras.")
     else:
         print("KESIMPULAN: HIJAU (AMAN)")
-        print("Sistem sangat cepat. Metode 2x FFT Dosbing aman digunakan.")
+        print("Sistem responsif. Aman pakai script Realtime FFT Manual.")
     print("="*50)
 
     uRAD_USB_SDK11.turnOFF(ser)
@@ -80,4 +81,4 @@ try:
 
 except Exception as e:
     print(f"\n[ERROR] {e}")
-    print("Pastikan port benar dan radar tercolok.")
+    print("Pastikan radar tercolok dan script dijalankan dengan 'python3'.")
