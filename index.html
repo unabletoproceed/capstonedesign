@@ -14,7 +14,7 @@
             margin: 0; padding: 0;
             background: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            overflow: hidden; /* Mencegah scroll saat animasi air */
+            overflow: hidden;
         }
 
         /* TEKS LOADING */
@@ -28,7 +28,6 @@
             letter-spacing: 5px;
             z-index: 0;
             pointer-events: none;
-            /* CLS Fix: Pastikan ukuran tetap */
             width: 100%; text-align: center; line-height: 1.2;
             
             /* Animasi fade out */
@@ -36,16 +35,16 @@
             font-display: swap;
         }
 
-        /* AIR NAIK (CLS CULPRIT FIX) */
+        /* AIR NAIK */
         .water {
             position: fixed; bottom: 0; left: 0; width: 100%; 
-            height: 0%; /* Start at 0 */
+            height: 0%; 
             z-index: 10;
             background-color: #93DCEC; 
             opacity: 0.95;
             pointer-events: none;
             
-            /* OPTIMASI GPU: Mencegah Layout Shift Score */
+            /* GPU Optimization */
             will-change: height; 
             transform: translateZ(0); 
 
@@ -57,7 +56,7 @@
             position: absolute; top: -198px; left: 0; width: 200%; height: 200px;
             background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1440' height='200'%3E%3Cpath fill='%2393DCEC' d='M0 80 Q 360 0 720 80 T 1440 80 V200 H0 Z'/%3E%3C/svg%3E");
             background-size: 50% 100%;
-            will-change: transform; /* Optimasi GPU */
+            will-change: transform;
         }
         
         .wave1 { z-index: 3; opacity: 1; animation: waveMove 5s linear infinite; }
@@ -67,15 +66,22 @@
         @keyframes fadeOutText { to { opacity: 0; visibility: hidden; } }
         @keyframes fillWater { 0% { height: 0%; } 100% { height: 100%; } }
         @keyframes waveMove { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        
+        /* CSS KHUSUS ICON SVG */
+        .svg-icon {
+            width: 40px;
+            height: 40px;
+            fill: white; /* Warna ikon putih */
+            transition: fill 0.3s;
+        }
+        /* Saat card di hover, ubah warna ikon jadi biru tua */
+        .role-card:hover .svg-icon {
+            fill: #0A3D52;
+        }
     </style>
 
     <link rel="stylesheet" href="css/portal.css" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'">
-    
-    <noscript>
-        <link rel="stylesheet" href="css/portal.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    </noscript>
+    <noscript><link rel="stylesheet" href="css/portal.css"></noscript>
 </head>
 <body>
 
@@ -94,9 +100,12 @@
         </header>
 
         <div class="role-grid">
+            
             <a href="home_public.html" class="role-card">
                 <div class="icon-box" style="width: 50px; height: 50px; margin: 0 auto 20px auto; display:flex; justify-content:center; align-items:center;">
-                    <i class="fas fa-users"></i>
+                    <svg class="svg-icon" viewBox="0 0 640 512">
+                        <path d="M96 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm448 0c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm32 32h-64c-17.6 0-33.5 7.1-45.1 18.6 40.3 35.6 68.9 86.1 71.3 143.4H592c17.7 0 32-14.3 32-32v-64c0-35.3-28.7-64-64-64zm-448 0H64c-35.3 0-64 28.7-64 64v64c0 17.7 14.3 32 32 32h57.8c2.4-57.3 30.9-107.8 71.3-143.4C149.5 263.1 133.6 256 116 256zM400 256H240c-14.8 0-28.4 2.8-41.1 7.9-34.9 14-61.6 44.8-68.9 83.1C123 385 150.9 416 189.3 416h261.4c38.4 0 66.3-31 59.3-69-7.3-38.3-34-69.1-68.9-83.1-12.7-5.1-26.3-7.9-41.1-7.9zM320 224c53 0 96-43 96-96s-43-96-96-96-96 43-96 96 43 96 96 96z"/>
+                    </svg>
                 </div>
                 <h3>Masyarakat Umum</h3>
                 <p>Status keamanan sungai & peringatan banjir.</p>
@@ -104,7 +113,9 @@
 
             <a href="home.html" class="role-card">
                 <div class="icon-box" style="width: 50px; height: 50px; margin: 0 auto 20px auto; display:flex; justify-content:center; align-items:center;">
-                    <i class="fas fa-graduation-cap"></i>
+                    <svg class="svg-icon" viewBox="0 0 640 512">
+                        <path d="M320 32c-8.1 0-16.1 1.4-23.7 4.1L15.8 137.4C6.3 140.9 0 149.9 0 160s6.3 19.1 15.8 22.6l57.9 20.9C57.3 229.3 48 259.8 48 291.9v28.1c0 28.4-10.8 57.7-22.3 80.8-6.5 13-13.9 25.8-22.5 37.6-3.2 4.3-4.1 9.9-2.3 15 1.9 5.1 6.6 8.5 11.9 8.5h73.1c21.5 0 41.9-11.9 52.7-30.6 6.6-11.3 26-53 26-53 1.4-2.8 6-12 11.4-24.1 12.8-28.5 28.2-60.8 28.2-60.8l56.8 20.5c26.6 9.6 55.7 9.6 82.3 0l280.3-101.3c9.5-3.5 15.8-12.5 15.8-22.6s-6.3-19.1-15.8-22.6L343.7 36.1C336.1 33.4 328.1 32 320 32zM87.8 332c11.2-19.1 24.3-39.7 39.5-60.1l-42.1-15.2c5.8 27.2 12.6 52.6 18.2 64.9 3.1 6.8 6.5 11.1 8 12.7-8.9-1.2-17.1.6-23.6-2.3z"/>
+                    </svg>
                 </div>
                 <h3>Mahasiswa</h3>
                 <p>Data mentah, grafik FFT & simulasi radar.</p>
@@ -112,11 +123,14 @@
 
             <a href="login.html" class="role-card">
                 <div class="icon-box" style="width: 50px; height: 50px; margin: 0 auto 20px auto; display:flex; justify-content:center; align-items:center;">
-                    <i class="fas fa-user-shield"></i>
+                    <svg class="svg-icon" viewBox="0 0 640 512">
+                        <path d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0 96 57.3 96 128s57.3 128 128 128zm-45.7 48C79.8 304 0 383.8 0 482.3 0 498.7 13.3 512 29.7 512H418l-87.9-175.7c-9.3-18.7-31.3-32.3-46.4-32.3h-105.4zM630.5 186.2l-98.3-49.2c-12.7-6.3-27.7-6.3-40.3 0l-98.3 49.2C380.1 192.9 376 205.9 376 219.8v94.8c0 74.2 46.5 138.8 111.9 161.4 7.6 2.6 15.6 2.6 23.2 0C576.5 453.4 624 388.9 624 314.7v-94.8c0-13.9-4.1-26.9-17.5-33.7z"/>
+                    </svg>
                 </div>
                 <h3>Petugas</h3>
                 <p>Manajemen data & log insiden.</p>
             </a>
+
         </div>
 
         <footer class="portal-footer">
