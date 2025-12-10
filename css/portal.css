@@ -1,9 +1,10 @@
 /* css/portal.css */
 
-/* Initially Hidden */
 .portal-container {
-    opacity: 0;
-    visibility: hidden;
+    /* UBAH DI SINI: Jangan hidden, tapi gunakan animasi */
+    opacity: 0; 
+    /* visibility: hidden; <--- HAPUS INI */
+    
     position: absolute;
     top: 0;
     left: 0;
@@ -13,14 +14,21 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 20; /* Must be higher than water */
-    transition: opacity 1s ease-in-out;
+    
+    /* Pastikan z-index lebih tinggi dari air (biasanya air z-index: 1) */
+    z-index: 100; 
+    
+    /* Animasi otomatis: Muncul perlahan setelah 0.5 detik (setelah loading selesai) */
+    animation: fadeInPortal 1s ease-out 0.5s forwards;
 }
 
-/* When Active (Added by JS) */
-.portal-container.active {
-    opacity: 1;
-    visibility: visible;
+/* KITA TIDAK BUTUH CLASS .active LAGI */
+/* .portal-container.active { ... } HAPUS SAJA */
+
+/* Keyframe agar menu muncul pelan-pelan */
+@keyframes fadeInPortal {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Header Styling */
@@ -28,8 +36,9 @@
     text-align: center;
     color: white;
     margin-bottom: 40px;
-    transform: translateY(20px);
-    animation: floatUp 1s ease 0.5s forwards;
+    /* Animasi header juga */
+    opacity: 0;
+    animation: floatUp 1s ease 0.8s forwards; /* Delay sedikit lebih lama dari container */
 }
 
 .portal-header h1 {
@@ -49,7 +58,7 @@
 .role-grid {
     display: flex;
     gap: 25px;
-    z-index: 30;
+    z-index: 101; /* Pastikan di atas container */
 }
 
 /* Glassmorphism Cards */
@@ -66,6 +75,10 @@
     color: white;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    
+    /* Animasi masuk kartu satu per satu */
+    opacity: 0;
+    animation: floatUp 0.8s ease 1s forwards;
 }
 
 /* Hover Effects */
@@ -99,11 +112,14 @@
     margin-top: 50px;
     color: rgba(255,255,255,0.6);
     font-size: 0.8rem;
+    opacity: 0;
+    animation: floatUp 1s ease 1.5s forwards;
 }
 
 /* Animation Keyframes */
 @keyframes floatUp {
-    to { transform: translateY(0); }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Mobile */
