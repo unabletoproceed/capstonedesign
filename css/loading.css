@@ -5,10 +5,10 @@ body {
     padding: 0;
     background: #ffffff;
     font-family: 'Segoe UI', Arial, sans-serif;
-    overflow: hidden; /* Mencegah scroll saat animasi */
+    overflow: hidden; 
 }
 
-/* LAYER 1: TEKS (Z-INDEX 0) */
+/* 1. TEKS LOADING (Paling Bawah) */
 .loading-text {
     position: fixed;
     top: 50%;
@@ -17,36 +17,41 @@ body {
     
     font-size: 32px;
     font-weight: 800;
-    color: #0A3D52; /* Biru Tua agar kontras sebelum air naik */
+    color: #0A3D52; /* Biru Tua */
     text-transform: uppercase;
     letter-spacing: 5px;
     
-    z-index: 0; /* Paling Bawah */
-    transition: opacity 0.5s;
+    z-index: 0;
+    pointer-events: none;
+    
+    /* PERBAIKAN DI SINI: */
+    /* Teks akan otomatis menghilang pelan-pelan mulai detik ke-2.5 */
+    /* Agar saat menu muncul di detik ke-3.5, teks ini sudah bersih */
+    animation: fadeOutText 1s ease-out 2.5s forwards;
+    opacity: 1; /* Awalnya terlihat */
 }
 
-/* Helper Class untuk menghilangkan teks via JS */
-.loading-text.hidden {
-    opacity: 0;
+/* Keyframe untuk menghilangkan teks */
+@keyframes fadeOutText {
+    from { opacity: 1; }
+    to { opacity: 0; visibility: hidden; }
 }
 
-/* LAYER 2: AIR (Z-INDEX 10) */
+/* 2. AIR NAIK (Tengah) */
 .water {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 0%; /* Mulai dari kosong */
+    height: 0%;
     
-    z-index: 10; /* Di atas Teks, Di bawah Menu */
+    z-index: 10; 
     
     background-color: #93DCEC; 
-    opacity: 0.9; /* Cukup solid untuk menutupi teks */
+    opacity: 0.95; /* Sedikit lebih solid */
     
-    pointer-events: none; /* PENTING: Agar klik tembus ke menu nanti */
-    
-    /* Animasi naik perlahan */
-    animation: fillWater 3s ease-in-out forwards;
+    /* Animasi 4 detik */
+    animation: fillWater 4s ease-in-out forwards;
 }
 
 /* Gelombang */
@@ -60,9 +65,9 @@ body {
     background-size: 50% 100%;
 }
 
-.wave1 { z-index: 3; opacity: 1; animation: waveMove 3s linear infinite; }
-.wave2 { z-index: 2; opacity: 0.5; animation: waveMove 5s linear infinite; animation-delay: -2s; }
-.wave3 { z-index: 1; opacity: 0.3; animation: waveMove 7s linear infinite; animation-delay: -3s; }
+.wave1 { z-index: 3; opacity: 1; animation: waveMove 5s linear infinite; }
+.wave2 { z-index: 2; opacity: 0.5; animation: waveMove 7s linear infinite; animation-delay: -2s; }
+.wave3 { z-index: 1; opacity: 0.3; animation: waveMove 11s linear infinite; animation-delay: -5s; }
 
 @keyframes fillWater {
     0% { height: 0%; }

@@ -53,13 +53,14 @@ function initMap() {
 // 3. REAL DATA LOGIC
 // ==========================================
 const statusBox = document.getElementById('latest-status');
+let velocityChartInstance = null;
+let dischargeChartInstance = null;
 
+// --- A. Load Latest Data ---
 async function loadLatestData() {
-    // Jika tidak ada kotak status (berarti di index), stop biar ringan
     if (!statusBox) return; 
 
     try {
-        // PERBAIKAN: Menggunakan tabel 'radar_data'
         const { data, error } = await supabase
             .from('radar_data') 
             .select('*')
