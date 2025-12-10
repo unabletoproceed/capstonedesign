@@ -1,4 +1,4 @@
-/* --- PUBLIC PAGE LAYOUT --- */
+/* public.css */
 .public-container {
     max-width: 600px; /* Mobile focused width */
     margin: 0 auto;
@@ -27,7 +27,6 @@
     transition: background 0.3s;
 }
 
-/* --- THE ANIMATION SCENE --- */
 .scene-box {
     width: 100%;
     height: 300px;
@@ -40,12 +39,10 @@
     transition: background 1s;
 }
 
-/* Dark Mode (Danger) */
 .scene-box.danger-mode {
     background: linear-gradient(to bottom, #2c3e50, #4ca1af); /* Stormy Sky */
 }
 
-/* The Sun */
 .sun {
     position: absolute;
     top: 30px;
@@ -59,48 +56,74 @@
 }
 
 .danger-mode .sun {
-    top: -100px; /* Hide sun in danger mode */
+    top: -100px; 
 }
 
-/* Water Layers */
-.water-back, .water-front {
+/* Wadah utama air di dalam kotak */
+.public-water-container {
     position: absolute;
     bottom: 0;
     left: 0;
-    /* Make the container HUGE so we have plenty of room to animate without running out */
-    width: 400%; 
-    background-repeat: repeat-x;
-    background-position: bottom left;
-    /* Important: Let the height define the size, let width auto-calculate based on SVG aspect ratio. This prevents distortion seams. */
-    background-size: auto 100%; 
-    transform-origin: bottom center;
+    width: 100%;
+    height: 40%;     
+    z-index: 5;
+    transition: height 1s ease-in-out, background-color 1s ease-in-out;
 }
 
-/* Back Wave (Lighter, Slower) */
-.water-back {
-    height: 90px; /* Slightly taller */
-    z-index: 1;
+/* Gaya Umum Gelombang */
+.public-wave {
+    position: absolute;
+    top: -98px; 
+    left: 0;
+    width: 200%; 
+    height: 100px; 
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1440' height='200'%3E%3Cpath fill='%2329B6F6' d='M0 80 Q 360 0 720 80 T 1440 80 V200 H0 Z'/%3E%3C/svg%3E");
+    background-size: 50% 100%;
+    will-change: transform;
+    transition: background 1s ease-in-out; 
+}
+
+/* Layer Gelombang (Urutan tumpukan dan kecepatan berbeda) */
+.p-wave1 {
+    z-index: 3;
+    opacity: 1;
+    animation: publicWaveMove 5s linear infinite;
+}
+
+.p-wave2 {
+    z-index: 2;
     opacity: 0.7;
-    /* NEW SEAMLESS SVG */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,46.29V0Z' fill='%23E0F7FA'/%3E%3Cpath d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,46.29V120H0Z' fill='%2387CEEB'/%3E%3C/svg%3E");
-    animation: waveBob 5s ease-in-out infinite alternate;
+    animation: publicWaveMove 7s linear infinite;
+    animation-delay: -2s;
 }
 
-/* Front Wave (Darker, Faster) */
-.water-front {
-    height: 70px;
-    z-index: 10;
-    /* NEW SEAMLESS SVG */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,46.29V0Z' fill='%2387CEEB'/%3E%3Cpath d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,46.29V120H0Z' fill='%234a90e2'/%3E%3C/svg%3E");
-    animation: waveBob 4s ease-in-out infinite alternate-reverse; /* Reverse direction for contrast */
+.p-wave3 {
+    z-index: 1;
+    opacity: 0.4;
+    animation: publicWaveMove 9s linear infinite;
+    animation-delay: -4s;
 }
 
-/* A simpler bobbing animation that won't reveal edges */
-@keyframes waveBob {
-    0% { transform: scaleY(1) translateX(0); }
-    100% { transform: scaleY(1.1) translateX(-20px); }
+/* Animasi Geser Horizontal (Sama seperti index.html) */
+@keyframes publicWaveMove {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
 }
-/* The Swimmer */
+
+/* --- MODIFIKASI DANGER MODE --- */
+
+/* Saat Bahaya: Air naik lebih tinggi dan warnanya jadi gelap */
+.scene-box.danger-mode .public-water-container {
+    height: 85%; 
+    background-color: #2c3e50; 
+}
+
+/* Saat Bahaya: Warna gelombang SVG juga harus ikut gelap */
+.scene-box.danger-mode .public-wave {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1440' height='200'%3E%3Cpath fill='%2334495e' d='M0 80 Q 360 0 720 80 T 1440 80 V200 H0 Z'/%3E%3C/svg%3E");
+    background-size: 50% 100%;
+}
+
 .swimmer {
     position: absolute;
     bottom: 40px;
@@ -115,7 +138,7 @@
 
 .danger-mode .swimmer {
     opacity: 0;
-    bottom: -50px; /* Sink him */
+    bottom: -50px; 
 }
 
 @keyframes bobbing {
@@ -123,7 +146,6 @@
     50% { transform: translate(-50%, -10px); }
 }
 
-/* Warning Sign */
 .warning-sign {
     position: absolute;
     top: 50%;
@@ -156,7 +178,6 @@
     opacity: 1;
 }
 
-/* Rain Effect (CSS Only) */
 .rain-container {
     position: absolute;
     width: 100%;
@@ -170,10 +191,8 @@
 
 .danger-mode .rain-container {
     opacity: 1;
-    /* Add a simple rain animation if desired via JS or complex CSS */
 }
 
-/* Info Cards */
 .advice-card {
     background: white;
     padding: 25px;
@@ -196,7 +215,6 @@
     font-size: 0.9rem;
 }
 
-/* WhatsApp Button */
 .wa-float {
     position: fixed;
     bottom: 20px;

@@ -81,17 +81,14 @@
             100% { transform: translateX(-50%); } 
         }
 
-        /* CSS KHUSUS PORTAL & CARD (GPU OPTIMIZED) */
         .portal-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             z-index: 100;
             opacity: 0;
             
-            /* FIX: Hapus pointer-events dari keyframes */
             pointer-events: none; 
             
-            /* Animasi delay murni CSS */
             animation: fadeInPortal 1s ease-out 3.5s forwards;
             will-change: opacity, transform;
         }
@@ -110,7 +107,6 @@
 
         .role-grid { display: flex; gap: 25px; z-index: 101; }
 
-        /* ROLE CARD - FIX NON-COMPOSITED ANIMATION */
         .role-card {
             position: relative; /* Untuk pseudo element */
             background: rgba(255, 255, 255, 0.2);
@@ -121,38 +117,31 @@
             opacity: 0;
             animation: floatUp 0.8s ease 4s forwards;
             will-change: transform, opacity;
-            overflow: hidden; /* Penting untuk efek hover */
-            
-            /* FIX: Jangan transisi background-color (berat) */
+            overflow: hidden; 
             transition: transform 0.3s ease; 
         }
 
-        /* TRIK PRO: Gunakan ::before untuk animasi background (GPU Opacity) */
         .role-card::before {
             content: "";
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.95); /* Warna hover putih solid */
-            opacity: 0; /* Awalnya tidak terlihat */
+            background: rgba(255, 255, 255, 0.95); 
+            opacity: 0; 
             z-index: -1;
-            transition: opacity 0.3s ease; /* Transisi opacity itu ringan */
-            will-change: opacity;
+            transition: opacity 0.3s ease; 
         }
 
         .role-card:hover {
             transform: translateY(-10px);
-            /* Warna teks berubah (fill svg) ditangani di bawah */
         }
 
         .role-card:hover::before {
-            opacity: 1; /* Munculkan background putih */
+            opacity: 1; 
         }
 
-        /* ICON STYLING */
         .icon-box {
             width: 50px; height: 50px; margin: 0 auto 20px auto; 
             display:flex; justify-content:center; align-items:center;
             
-            /* FIX: Gunakan Scale, jangan font-size */
             transition: transform 0.3s ease;
             will-change: transform;
         }
@@ -162,10 +151,8 @@
             fill: white;
             transition: fill 0.3s ease;
         }
-
-        /* Hover States */
+        
         .role-card:hover .icon-box {
-            /* FIX: Scale up icon alih-alih ubah size */
             transform: scale(1.1);
         }
         

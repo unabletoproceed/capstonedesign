@@ -1,7 +1,6 @@
 /* css/portal.css */
 
 .portal-container {
-    /* Posisi Awal: Transparan */
     opacity: 0;
     
     position: fixed;
@@ -14,34 +13,28 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    
-    /* Z-INDEX TINGGI (Di atas air) */
+
     z-index: 100;
     
-    /* ANIMASI SAKTI: Muncul otomatis setelah 3.5 detik */
     animation: fadeInPortal 1s ease-out 3.5s forwards;
-    
-    /* Agar tidak menghalangi klik sebelum muncul */
     pointer-events: none; 
 }
 
-/* Keyframe untuk memunculkan container */
 @keyframes fadeInPortal {
     from { opacity: 0; transform: translateY(10px); }
     to { 
         opacity: 1; 
         transform: translateY(0); 
-        pointer-events: auto; /* Aktifkan klik setelah muncul */
+        pointer-events: auto; 
     }
 }
 
-/* Header Styling */
+
 .portal-header {
     text-align: center;
     color: white;
     margin-bottom: 40px;
     opacity: 0;
-    /* Muncul sedikit setelah container (Delay 3.8s) */
     animation: floatUp 1s ease 3.8s forwards;
 }
 
@@ -58,16 +51,14 @@
     margin-top: 10px;
 }
 
-/* Grid Layout */
 .role-grid {
     display: flex;
     gap: 25px;
     z-index: 101;
 }
 
-/* Cards (OPTIMASI: Tanpa Blur agar tidak Lag) */
 .role-card {
-    background: rgba(255, 255, 255, 0.2); /* Transparan ringan */
+    background: rgba(255, 255, 255, 0.2); 
     border: 1px solid rgba(255, 255, 255, 0.4);
     width: 240px;
     padding: 40px 20px;
@@ -77,16 +68,11 @@
     color: white;
     transition: transform 0.3s ease, background 0.3s;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    
-    /* Animasi masuk satu per satu (Delay 4s) */
     opacity: 0;
     animation: floatUp 0.8s ease 4s forwards;
-    
-    /* Optimasi Rendering */
     will-change: transform, opacity;
 }
 
-/* Hover Effects */
 .role-card:hover {
     background: rgba(255, 255, 255, 0.95);
     transform: translateY(-10px);
@@ -117,7 +103,6 @@
     animation: floatUp 1s ease 4.5s forwards;
 }
 
-/* Animation Keyframes */
 @keyframes floatUp {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
