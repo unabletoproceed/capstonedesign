@@ -4,29 +4,34 @@ import { supabase } from './supabase.js';
 // ==========================================
 // 1. LOGIKA TRANSISI PORTAL (KHUSUS INDEX.HTML)
 // ==========================================
-function handlePortalTransition() {
-    const loadingText = document.getElementById('loadingText');
-    const portal = document.getElementById('portalLayer');
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("Website Dimuat - Memulai Timer Menu...");
 
-    // Jika elemen ini ada (artinya kita sedang di index.html)
+    const portal = document.getElementById('portalLayer');
+    const loadingText = document.getElementById('loadingText');
+
+    // Cek apakah kita di halaman depan (index.html)
     if (portal) {
-        console.log("Halaman Portal Terdeteksi - Menunggu animasi air...");
-        
-        // Tunggu 2.5 detik (sesuai naiknya air), lalu munculkan menu
+        // Timer 3 detik (Waktu air naik)
         setTimeout(() => {
-            if (loadingText) loadingText.classList.add('hidden'); // Hilangkan teks
-            portal.classList.add('show'); // Munculkan menu
-            console.log("Menu Muncul!");
-        }, 2500);
+            console.log("Waktu Habis! Memunculkan Menu.");
+            
+            // 1. Sembunyikan Teks Loading
+            if (loadingText) loadingText.style.opacity = '0';
+            
+            // 2. Munculkan Menu Portal
+            portal.classList.add('show');
+            
+        }, 3000); 
     }
-}
+});
 
 // ==========================================
 // 2. INITIALIZE MAP (Hanya jika ada elemen map)
 // ==========================================
 function initMap() {
     const mapElement = document.getElementById('map');
-    if (!mapElement) return; // Stop jika tidak ada peta (misal di index.html)
+    if (!mapElement) return; // Stop jika tidak ada peta
 
     const targetLat = -6.97197;
     const targetLng = 107.62969;
@@ -48,18 +53,15 @@ function initMap() {
 // 3. REAL DATA LOGIC
 // ==========================================
 const statusBox = document.getElementById('latest-status');
-let velocityChartInstance = null;
-let dischargeChartInstance = null;
 
-// --- A. Load Latest Data ---
 async function loadLatestData() {
-    // Cek apakah kita butuh data ini? (Jika tidak ada statusBox, skip saja biar ringan)
+    // Jika tidak ada kotak status (berarti di index), stop biar ringan
     if (!statusBox) return; 
 
     try {
-        // GANTI 'river_data_real' SESUAI NAMA TABEL KAMU (Tadi kamu pakai radar_data?)
+        // PERBAIKAN: Menggunakan tabel 'radar_data'
         const { data, error } = await supabase
-            .from('river_data_real') 
+            .from('radar_data') 
             .select('*')
             .order('timestamp', { ascending: false })
             .limit(1);
@@ -86,13 +88,12 @@ async function loadLatestData() {
 
 // --- B. Load Charts ---
 async function loadChartData() {
-    // Cek dulu apakah elemen chart ada? Kalau tidak ada (di index.html), jangan dijalankan!
     if (!document.getElementById('velocityChart')) return;
 
     try {
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
         const { data, error } = await supabase
-            .from('river_data_real')
+            .from('radar_data')
             .select('*')
             .gte('timestamp', oneHourAgo)
             .order('timestamp', { ascending: true });
@@ -113,7 +114,7 @@ function renderCharts(labels, velocity, discharge) {
     const vCanvas = document.getElementById('velocityChart');
     const dCanvas = document.getElementById('dischargeChart');
 
-    if (!vCanvas || !dCanvas) return; // Safety check
+    if (!vCanvas || !dCanvas) return;
 
     const vCtx = vCanvas.getContext('2d');
     const dCtx = dCanvas.getContext('2d');
@@ -121,8 +122,6 @@ function renderCharts(labels, velocity, discharge) {
     if (velocityChartInstance) velocityChartInstance.destroy();
     if (dischargeChartInstance) dischargeChartInstance.destroy();
 
-    // Chart configs... (Sama seperti sebelumnya)
-    // Saya persingkat di sini agar muat, tapi kodenya sama dengan punyamu
     velocityChartInstance = new Chart(vCtx, {
         type: 'line',
         data: {
@@ -152,15 +151,13 @@ function renderCharts(labels, velocity, discharge) {
 function init() {
     console.log("System Initializing...");
     
-    // 1. Jalankan Transisi Menu (PENTING untuk Index.html)
+    // 1. Jalankan Transisi Menu (Sekarang fungsi ini SUDAH ADA)
     handlePortalTransition();
 
-    // 2. Coba ambil data (Untuk Dashboard)
-    // Kita jalankan loadLatestData() juga di index agar koneksi 'terpanasi'
-    // Walaupun tidak ditampilkan di layar
+    // 2. Load Data Dashboard
     loadLatestData(); 
     
-    // 3. Peta & Grafik (Hanya jalan jika elemennya ada)
+    // 3. Peta & Grafik
     initMap();
     loadChartData();
 }

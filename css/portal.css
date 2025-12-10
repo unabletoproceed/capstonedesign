@@ -1,37 +1,34 @@
 /* css/portal.css */
 
 .portal-container {
-    /* UBAH DI SINI: Jangan hidden, tapi gunakan animasi */
-    opacity: 0; 
-    /* visibility: hidden; <--- HAPUS INI */
-    
-    position: absolute;
+    opacity: 0;
+    position: fixed; 
     top: 0;
     left: 0;
     width: 100%;
     height: 100vh;
-    display: flex;
+    
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    
-    /* Pastikan z-index lebih tinggi dari air (biasanya air z-index: 1) */
+
     z-index: 100; 
     
-    /* Animasi otomatis: Muncul perlahan setelah 0.5 detik (setelah loading selesai) */
-    animation: fadeInPortal 1s ease-out 0.5s forwards;
+    transition: opacity 1s ease-out;
+    pointer-events: none; 
 }
 
-/* KITA TIDAK BUTUH CLASS .active LAGI */
-/* .portal-container.active { ... } HAPUS SAJA */
+.portal-container.show {
+    opacity: 1;
+    pointer-events: auto; 
+}
 
-/* Keyframe agar menu muncul pelan-pelan */
 @keyframes fadeInPortal {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Header Styling */
 .portal-header {
     text-align: center;
     color: white;
