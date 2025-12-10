@@ -21,34 +21,40 @@
         .loading-text {
             position: fixed;
             top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
+            /* Trik centering tanpa transform agar tidak bentrok saat animasi */
+            margin-top: -25px; margin-left: -150px; width: 300px; height: 50px;
+            
             font-size: 32px; font-weight: 800;
             color: #0A3D52;
             text-transform: uppercase;
             letter-spacing: 5px;
             z-index: 0;
             pointer-events: none;
-            width: 100%; text-align: center; line-height: 1.2;
+            text-align: center; line-height: 50px;
             
-            /* Animasi fade out */
+            /* FIX: Hapus visibility, hanya mainkan opacity */
             animation: fadeOutText 1s ease-out 2.5s forwards;
             font-display: swap;
+            will-change: opacity;
         }
 
-        /* AIR NAIK */
+        /* AIR NAIK (GPU OPTIMIZED) */
         .water {
             position: fixed; bottom: 0; left: 0; width: 100%; 
-            height: 0%; 
+            /* FIX: Jangan ubah Height. Gunakan Height 100% tapi geser ke bawah */
+            height: 100%; 
+            
+            /* Start: Tersembunyi di bawah layar (100%) */
+            transform: translateY(100%); 
+            
             z-index: 10;
             background-color: #93DCEC; 
             opacity: 0.95;
             pointer-events: none;
             
-            /* GPU Optimization */
-            will-change: height; 
-            transform: translateZ(0); 
-
-            animation: fillWater 4s ease-in-out forwards;
+            /* FIX: Gunakan TranslateY (GPU) bukan Height (CPU) */
+            will-change: transform; 
+            animation: riseWater 4s ease-in-out forwards;
         }
 
         /* Gelombang */
@@ -63,25 +69,129 @@
         .wave2 { z-index: 2; opacity: 0.5; animation: waveMove 7s linear infinite; animation-delay: -2s; }
         .wave3 { z-index: 1; opacity: 0.3; animation: waveMove 11s linear infinite; animation-delay: -5s; }
         
-        @keyframes fadeOutText { to { opacity: 0; visibility: hidden; } }
-        @keyframes fillWater { 0% { height: 0%; } 100% { height: 100%; } }
-        @keyframes waveMove { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        /* ANIMASI KEYFRAMES (Hanya Opacity & Transform) */
+        @keyframes fadeOutText { to { opacity: 0; } } /* Hapus visibility */
         
-        /* CSS KHUSUS ICON SVG */
-        .svg-icon {
-            width: 40px;
-            height: 40px;
-            fill: white; /* Warna ikon putih */
-            transition: fill 0.3s;
+        @keyframes riseWater { 
+            to { transform: translateY(0); } /* Geser naik ke posisi 0 */
         }
-        /* Saat card di hover, ubah warna ikon jadi biru tua */
-        .role-card:hover .svg-icon {
+        
+        @keyframes waveMove { 
+            0% { transform: translateX(0); } 
+            100% { transform: translateX(-50%); } 
+        }
+
+        /* CSS KHUSUS PORTAL & CARD (GPU OPTIMIZED) */
+        .portal-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100;
+            opacity: 0;
+            
+            /* FIX: Hapus pointer-events dari keyframes */
+            pointer-events: none; 
+            
+            /* Animasi delay murni CSS */
+            animation: fadeInPortal 1s ease-out 3.5s forwards;
+            will-change: opacity, transform;
+        }
+
+        @keyframes fadeInPortal {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); pointer-events: auto; } /* Set auto di sini aman */
+        }
+
+        .portal-header {
+            text-align: center; color: white; margin-bottom: 40px; opacity: 0;
+            animation: floatUp 1s ease 3.8s forwards;
+        }
+        .portal-header h1 { font-size: 3.5rem; margin: 0; letter-spacing: 3px; text-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .portal-header p { font-size: 1.1rem; opacity: 0.9; margin-top: 10px; }
+
+        .role-grid { display: flex; gap: 25px; z-index: 101; }
+
+        /* ROLE CARD - FIX NON-COMPOSITED ANIMATION */
+        .role-card {
+            position: relative; /* Untuk pseudo element */
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            width: 240px; padding: 40px 20px; border-radius: 20px;
+            text-align: center; text-decoration: none; color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            animation: floatUp 0.8s ease 4s forwards;
+            will-change: transform, opacity;
+            overflow: hidden; /* Penting untuk efek hover */
+            
+            /* FIX: Jangan transisi background-color (berat) */
+            transition: transform 0.3s ease; 
+        }
+
+        /* TRIK PRO: Gunakan ::before untuk animasi background (GPU Opacity) */
+        .role-card::before {
+            content: "";
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.95); /* Warna hover putih solid */
+            opacity: 0; /* Awalnya tidak terlihat */
+            z-index: -1;
+            transition: opacity 0.3s ease; /* Transisi opacity itu ringan */
+            will-change: opacity;
+        }
+
+        .role-card:hover {
+            transform: translateY(-10px);
+            /* Warna teks berubah (fill svg) ditangani di bawah */
+        }
+
+        .role-card:hover::before {
+            opacity: 1; /* Munculkan background putih */
+        }
+
+        /* ICON STYLING */
+        .icon-box {
+            width: 50px; height: 50px; margin: 0 auto 20px auto; 
+            display:flex; justify-content:center; align-items:center;
+            
+            /* FIX: Gunakan Scale, jangan font-size */
+            transition: transform 0.3s ease;
+            will-change: transform;
+        }
+
+        .svg-icon {
+            width: 40px; height: 40px;
+            fill: white;
+            transition: fill 0.3s ease;
+        }
+
+        /* Hover States */
+        .role-card:hover .icon-box {
+            /* FIX: Scale up icon alih-alih ubah size */
+            transform: scale(1.1);
+        }
+        
+        .role-card:hover .svg-icon,
+        .role-card:hover h3,
+        .role-card:hover p {
             fill: #0A3D52;
+            color: #0A3D52;
+        }
+
+        .role-card h3 { font-size: 1.4rem; margin-bottom: 10px; transition: color 0.3s; }
+        .role-card p { font-size: 0.9rem; opacity: 0.8; line-height: 1.5; transition: color 0.3s; }
+
+        .portal-footer {
+            margin-top: 50px; color: rgba(255,255,255,0.6); font-size: 0.8rem;
+            opacity: 0; animation: floatUp 1s ease 4.5s forwards;
+        }
+
+        @keyframes floatUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Mobile */
+        @media (max-width: 768px) {
+            .role-grid { flex-direction: column; }
+            .role-card { width: 200px; padding: 20px; }
         }
     </style>
-
-    <link rel="stylesheet" href="css/portal.css" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="css/portal.css"></noscript>
 </head>
 <body>
 
@@ -102,7 +212,7 @@
         <div class="role-grid">
             
             <a href="home_public.html" class="role-card">
-                <div class="icon-box" style="width: 50px; height: 50px; margin: 0 auto 20px auto; display:flex; justify-content:center; align-items:center;">
+                <div class="icon-box">
                     <svg class="svg-icon" viewBox="0 0 640 512">
                         <path d="M96 224c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm448 0c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64zm32 32h-64c-17.6 0-33.5 7.1-45.1 18.6 40.3 35.6 68.9 86.1 71.3 143.4H592c17.7 0 32-14.3 32-32v-64c0-35.3-28.7-64-64-64zm-448 0H64c-35.3 0-64 28.7-64 64v64c0 17.7 14.3 32 32 32h57.8c2.4-57.3 30.9-107.8 71.3-143.4C149.5 263.1 133.6 256 116 256zM400 256H240c-14.8 0-28.4 2.8-41.1 7.9-34.9 14-61.6 44.8-68.9 83.1C123 385 150.9 416 189.3 416h261.4c38.4 0 66.3-31 59.3-69-7.3-38.3-34-69.1-68.9-83.1-12.7-5.1-26.3-7.9-41.1-7.9zM320 224c53 0 96-43 96-96s-43-96-96-96-96 43-96 96 43 96 96 96z"/>
                     </svg>
@@ -112,7 +222,7 @@
             </a>
 
             <a href="home.html" class="role-card">
-                <div class="icon-box" style="width: 50px; height: 50px; margin: 0 auto 20px auto; display:flex; justify-content:center; align-items:center;">
+                <div class="icon-box">
                     <svg class="svg-icon" viewBox="0 0 640 512">
                         <path d="M320 32c-8.1 0-16.1 1.4-23.7 4.1L15.8 137.4C6.3 140.9 0 149.9 0 160s6.3 19.1 15.8 22.6l57.9 20.9C57.3 229.3 48 259.8 48 291.9v28.1c0 28.4-10.8 57.7-22.3 80.8-6.5 13-13.9 25.8-22.5 37.6-3.2 4.3-4.1 9.9-2.3 15 1.9 5.1 6.6 8.5 11.9 8.5h73.1c21.5 0 41.9-11.9 52.7-30.6 6.6-11.3 26-53 26-53 1.4-2.8 6-12 11.4-24.1 12.8-28.5 28.2-60.8 28.2-60.8l56.8 20.5c26.6 9.6 55.7 9.6 82.3 0l280.3-101.3c9.5-3.5 15.8-12.5 15.8-22.6s-6.3-19.1-15.8-22.6L343.7 36.1C336.1 33.4 328.1 32 320 32zM87.8 332c11.2-19.1 24.3-39.7 39.5-60.1l-42.1-15.2c5.8 27.2 12.6 52.6 18.2 64.9 3.1 6.8 6.5 11.1 8 12.7-8.9-1.2-17.1.6-23.6-2.3z"/>
                     </svg>
@@ -122,7 +232,7 @@
             </a>
 
             <a href="login.html" class="role-card">
-                <div class="icon-box" style="width: 50px; height: 50px; margin: 0 auto 20px auto; display:flex; justify-content:center; align-items:center;">
+                <div class="icon-box">
                     <svg class="svg-icon" viewBox="0 0 640 512">
                         <path d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0 96 57.3 96 128s57.3 128 128 128zm-45.7 48C79.8 304 0 383.8 0 482.3 0 498.7 13.3 512 29.7 512H418l-87.9-175.7c-9.3-18.7-31.3-32.3-46.4-32.3h-105.4zM630.5 186.2l-98.3-49.2c-12.7-6.3-27.7-6.3-40.3 0l-98.3 49.2C380.1 192.9 376 205.9 376 219.8v94.8c0 74.2 46.5 138.8 111.9 161.4 7.6 2.6 15.6 2.6 23.2 0C576.5 453.4 624 388.9 624 314.7v-94.8c0-13.9-4.1-26.9-17.5-33.7z"/>
                     </svg>
