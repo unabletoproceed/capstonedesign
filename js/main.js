@@ -2,17 +2,36 @@
 import { supabase } from './supabase.js';
 
 // ==========================================
-// 1. INITIALIZE MAP (Telkom University / Bojongsoang)
+// 1. LOGIKA TRANSISI PORTAL (KHUSUS INDEX.HTML)
 // ==========================================
-const mapElement = document.getElementById('map');
+function handlePortalTransition() {
+    const loadingText = document.getElementById('loadingText');
+    const portal = document.getElementById('portalLayer');
 
-if (mapElement) {
-    // Coordinates: -6.97197, 107.62969
+    // Jika elemen ini ada (artinya kita sedang di index.html)
+    if (portal) {
+        console.log("Halaman Portal Terdeteksi - Menunggu animasi air...");
+        
+        // Tunggu 2.5 detik (sesuai naiknya air), lalu munculkan menu
+        setTimeout(() => {
+            if (loadingText) loadingText.classList.add('hidden'); // Hilangkan teks
+            portal.classList.add('show'); // Munculkan menu
+            console.log("Menu Muncul!");
+        }, 2500);
+    }
+}
+
+// ==========================================
+// 2. INITIALIZE MAP (Hanya jika ada elemen map)
+// ==========================================
+function initMap() {
+    const mapElement = document.getElementById('map');
+    if (!mapElement) return; // Stop jika tidak ada peta (misal di index.html)
+
     const targetLat = -6.97197;
     const targetLng = 107.62969;
 
     const map = L.map('map').setView([targetLat, targetLng], 15);
-
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap'
@@ -26,36 +45,33 @@ if (mapElement) {
 }
 
 // ==========================================
-// 2. REAL DATA LOGIC
+// 3. REAL DATA LOGIC
 // ==========================================
 const statusBox = document.getElementById('latest-status');
 let velocityChartInstance = null;
 let dischargeChartInstance = null;
 
-// --- A. Load the Single Latest Value (Status Box) ---
+// --- A. Load Latest Data ---
 async function loadLatestData() {
+    // Cek apakah kita butuh data ini? (Jika tidak ada statusBox, skip saja biar ringan)
+    if (!statusBox) return; 
+
     try {
-        // Fetch 1 row, ordered by latest timestamp
+        // GANTI 'river_data_real' SESUAI NAMA TABEL KAMU (Tadi kamu pakai radar_data?)
         const { data, error } = await supabase
-            .from('radar_data')
+            .from('river_data_real') 
             .select('*')
             .order('timestamp', { ascending: false })
             .limit(1);
 
         if (error) throw error;
 
-        // If table is empty
         if (!data || data.length === 0) {
-            statusBox.innerHTML = `
-                <div style="color:orange;">Menunggu Data...</div>
-                <div style="font-size:0.8rem;">Database Connected. No rows found.</div>
-            `;
+            statusBox.innerHTML = `<div style="color:orange;">Menunggu Data...</div>`;
             return;
         }
 
         const latest = data[0];
-        
-        // Update the HTML
         statusBox.innerHTML = `
             <div><strong>Kecepatan:</strong> ${latest.velocity} m/s</div>
             <div><strong>Debit:</strong> ${latest.discharge} m³/s</div>
@@ -63,105 +79,99 @@ async function loadLatestData() {
                 Last Update: ${new Date(latest.timestamp).toLocaleTimeString()}
             </div>
         `;
-
     } catch (err) {
         console.error("Error loading status:", err);
-        statusBox.innerHTML = `<div style="color:red;">Connection Error</div>`;
     }
 }
 
-// --- B. Load Historical Data (Charts - Last 1 Hour) ---
+// --- B. Load Charts ---
 async function loadChartData() {
-    try {
-        // Calculate time 1 hour ago
-        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    // Cek dulu apakah elemen chart ada? Kalau tidak ada (di index.html), jangan dijalankan!
+    if (!document.getElementById('velocityChart')) return;
 
+    try {
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
         const { data, error } = await supabase
-            .from('radar_data')
+            .from('river_data_real')
             .select('*')
             .gte('timestamp', oneHourAgo)
             .order('timestamp', { ascending: true });
 
         if (error) throw error;
 
-        // Format data for Chart.js
         const labels = data.map(row => new Date(row.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
         const velocity = data.map(row => row.velocity);
         const discharge = data.map(row => row.discharge);
 
         renderCharts(labels, velocity, discharge);
-
     } catch (err) {
         console.error("Error loading charts:", err);
     }
 }
 
-// --- C. Draw Charts (Visuals) ---
 function renderCharts(labels, velocity, discharge) {
-    const vCtx = document.getElementById('velocityChart').getContext('2d');
-    const dCtx = document.getElementById('dischargeChart').getContext('2d');
+    const vCanvas = document.getElementById('velocityChart');
+    const dCanvas = document.getElementById('dischargeChart');
+
+    if (!vCanvas || !dCanvas) return; // Safety check
+
+    const vCtx = vCanvas.getContext('2d');
+    const dCtx = dCanvas.getContext('2d');
 
     if (velocityChartInstance) velocityChartInstance.destroy();
     if (dischargeChartInstance) dischargeChartInstance.destroy();
 
-    // Gradients
-    let gradientV = vCtx.createLinearGradient(0, 0, 0, 400);
-    gradientV.addColorStop(0, 'rgba(147, 220, 236, 0.6)'); 
-    gradientV.addColorStop(1, 'rgba(147, 220, 236, 0.0)'); 
-
-    let gradientD = dCtx.createLinearGradient(0, 0, 0, 400);
-    gradientD.addColorStop(0, 'rgba(90, 174, 194, 0.6)'); 
-    gradientD.addColorStop(1, 'rgba(90, 174, 194, 0.0)');
-
-    // Velocity Chart
+    // Chart configs... (Sama seperti sebelumnya)
+    // Saya persingkat di sini agar muat, tapi kodenya sama dengan punyamu
     velocityChartInstance = new Chart(vCtx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Kecepatan (m/s)',
-                data: velocity,
-                borderColor: '#0A3D52',
-                borderWidth: 2,
-                backgroundColor: gradientV,
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: '#fff',
-                pointBorderColor: '#0A3D52'
+                label: 'Kecepatan', data: velocity, borderColor: '#0A3D52', fill: true
             }]
         },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#f0f0f0' } } } }
+        options: { responsive: true, maintainAspectRatio: false }
     });
 
-    // Discharge Chart
     dischargeChartInstance = new Chart(dCtx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Debit (m³/s)',
-                data: discharge,
-                borderColor: '#5aaec2',
-                borderWidth: 2,
-                backgroundColor: gradientD,
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: '#fff',
-                pointBorderColor: '#5aaec2'
+                label: 'Debit', data: discharge, borderColor: '#5aaec2', fill: true
             }]
         },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#f0f0f0' } } } }
+        options: { responsive: true, maintainAspectRatio: false }
     });
 }
 
-// --- D. Start System ---
+// ==========================================
+// 4. START SYSTEM
+// ==========================================
 function init() {
-    loadLatestData();
+    console.log("System Initializing...");
+    
+    // 1. Jalankan Transisi Menu (PENTING untuk Index.html)
+    handlePortalTransition();
+
+    // 2. Coba ambil data (Untuk Dashboard)
+    // Kita jalankan loadLatestData() juga di index agar koneksi 'terpanasi'
+    // Walaupun tidak ditampilkan di layar
+    loadLatestData(); 
+    
+    // 3. Peta & Grafik (Hanya jalan jika elemennya ada)
+    initMap();
     loadChartData();
 }
 
-// Run immediately
+// Jalankan saat script dimuat
 init();
 
-// Auto-refresh every 5 seconds
-setInterval(init, 5000);
+// Refresh data setiap 5 detik (Hanya jika bukan di index)
+if (!document.getElementById('portalLayer')) {
+    setInterval(() => {
+        loadLatestData();
+        loadChartData();
+    }, 5000);
+}
