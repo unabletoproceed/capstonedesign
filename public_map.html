@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peta Persebaran Sensor - SERABI</title>
+    
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        /* Reset Margin agar Full Screen */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden; /* Hilangkan scrollbar */
+        }
+
+        /* 1. PETA FULL SCREEN */
+        #map {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0; /* Di paling belakang */
+        }
+
+        /* 2. NAVBAR MELAYANG (FLOATING) */
+        .navbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000; /* Di atas peta */
+            background: rgba(255, 255, 255, 0.9); /* Sedikit transparan */
+            backdrop-filter: blur(5px); /* Efek kaca */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 3. JUDUL MELAYANG DI TENGAH BAWAH NAVBAR */
+        .map-title-card {
+            position: absolute;
+            top: 90px; /* Jarak dari atas (di bawah navbar) */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            min-width: 300px;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        .map-title-card h2 { margin: 0; font-size: 1.1rem; color: var(--deep-ocean); }
+        .map-title-card p { margin: 2px 0 0; font-size: 0.8rem; color: #666; }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translate(-50%, -20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        /* Custom Popup Style */
+        .custom-popup .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            padding: 0;
+            overflow: hidden;
+        }
+        .leaflet-popup-content { margin: 0; width: 220px !important; }
+        
+        .popup-header {
+            background: var(--deep-ocean);
+            color: white;
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        .popup-body { padding: 15px; }
+        
+        .status-badge {
+            display: inline-block; padding: 4px 10px; border-radius: 4px; 
+            font-size: 0.7rem; font-weight: bold; color: white; margin-bottom: 8px;
+        }
+        .online { background: #2dce89; }
+        .offline { background: #f5365c; }
+
+        .btn-check {
+            display: block; width: 100%; padding: 8px; 
+            background: var(--water-dark); color: white; text-align: center; 
+            text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 0.85rem;
+        }
+        .btn-check:hover { background: #0A3D52; }
+
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo" style="color:var(--deep-ocean)">SERABI</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Kembali</a></li>
+                <li><a href="login.html" class="lang-btn">Login Petugas</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="map-title-card">
+        <h2>Pilih Lokasi Pantau</h2>
+        <p>Klik pin pada peta untuk melihat detail.</p>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script type="module">
+        import { supabase } from './js/supabase.js';
+
+        // 1. Inisialisasi Peta
+        const map = L.map('map', {
+            zoomControl: false // Kita pindah posisi zoom nanti
+        }).setView([-6.97197, 107.62969], 13);
+
+        // Pindahkan tombol zoom ke kanan bawah agar rapi
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // 2. Load Data Alat
+        async function loadDevices() {
+            try {
+                const { data: devices, error } = await supabase.from('devices').select('*');
+                if (error) throw error;
+
+                if (!devices) return;
+
+                devices.forEach(device => {
+                    const isOnline = device.status === 'online';
+                    const statusClass = isOnline ? 'online' : 'offline';
+                    
+                    const popupHTML = `
+                        <div class="popup-header">
+                            <i class="fas fa-map-pin"></i> ${device.name}
+                        </div>
+                        <div class="popup-body">
+                            <span class="status-badge ${statusClass}">${device.status.toUpperCase()}</span>
+                            <div style="font-size:0.8rem; color:#666; margin-bottom:10px;">
+                                Lat: ${device.location_lat.toFixed(4)}<br>
+                                Lng: ${device.location_lng.toFixed(4)}
+                            </div>
+                            <a href="home_public.html?id=${device.id}" class="btn-check">
+                                Cek Status Air
+                            </a>
+                        </div>
+                    `;
+
+                    L.marker([device.location_lat, device.location_lng])
+                        .addTo(map)
+                        .bindPopup(popupHTML, { className: 'custom-popup' });
+                });
+
+            } catch (err) {
+                console.error("Gagal load peta:", err);
+            }
+        }
+
+        loadDevices();
+    </script>
+</body>
+</html>
