@@ -1,153 +1,282 @@
 // js/admin.js
 import { supabase } from './supabase.js';
 
-// DOM Elements
-const tableBody = document.getElementById('adminTableBody');
-const totalCountEl = document.getElementById('totalCount');
-const lastStatusEl = document.getElementById('lastStatus');
-const userInfoEl = document.getElementById('userInfo');
+let currentDevices = [];
 
-// Inputs
-const inVelocity = document.getElementById('inVelocity');
-const inDischarge = document.getElementById('inDischarge');
-const addBtn = document.getElementById('addDataBtn');
-
-// 1. AUTH GUARD (Security)
-async function checkSession() {
+// 1. AUTH & INIT
+async function init() {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-        window.location.href = 'login.html'; // Kick out
-    } else {
-        userInfoEl.textContent = session.user.email;
-        loadData(); // Load data only if logged in
-    }
+    if (!session) window.location.href = 'login.html';
+    loadDevices();
 }
+init();
 
-// 2. FETCH DATA & STATS
-async function loadData() {
-    try {
-        // A. Get Total Count
-        const { count } = await supabase
-            .from('river_data_real')
-            .select('*', { count: 'exact', head: true });
-        
-        totalCountEl.textContent = count || 0;
+// DOM Elements
+const deviceTableBody = document.getElementById('device-table-body');
+const addForm = document.getElementById('add-device-form');
+const editForm = document.getElementById('edit-device-form');
+const manualForm = document.getElementById('manual-data-form');
+const historyTableBody = document.getElementById('history-table-body');
 
-        // B. Get Table Data (Last 50)
-        const { data, error } = await supabase
-            .from('river_data_real')
-            .select('*')
-            .order('timestamp', { ascending: false })
-            .limit(50);
-
-        if (error) throw error;
-
-        renderTable(data);
-        updateLatestStatus(data[0]);
-
-    } catch (err) {
-        console.error("Error loading data:", err);
-    }
-}
-
-// 3. RENDER TABLE
-function renderTable(data) {
-    tableBody.innerHTML = '';
-
-    if (!data || data.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada data.</td></tr>';
-        return;
-    }
-
-    data.forEach(row => {
-        const tr = document.createElement('tr');
-        const dateStr = new Date(row.timestamp).toLocaleString();
-
-        tr.innerHTML = `
-            <td>#${row.id}</td>
-            <td>${dateStr}</td>
-            <td><strong>${row.velocity}</strong> m/s</td>
-            <td>${row.discharge} m³/s</td>
-            <td class="action-td">
-                <button class="btn-delete" onclick="deleteRow(${row.id})">Hapus</button>
-            </td>
-        `;
-        tableBody.appendChild(tr);
-    });
-}
-
-function updateLatestStatus(latest) {
-    if (latest) {
-        lastStatusEl.textContent = `V: ${latest.velocity} | Q: ${latest.discharge}`;
-    } else {
-        lastStatusEl.textContent = "Offline";
-    }
-}
-
-// 4. DELETE FUNCTION (Attached to Window for onclick access)
-window.deleteRow = async (id) => {
-    if (confirm(`Yakin ingin menghapus data ID #${id}?`)) {
-        try {
-            const { error } = await supabase
-                .from('river_data_real')
-                .delete()
-                .eq('id', id);
-
-            if (error) throw error;
-            
-            // Refresh table
-            loadData(); 
-
-        } catch (err) {
-            alert("Gagal menghapus: " + err.message);
-        }
-    }
-};
-
-// 5. MANUAL INSERT FUNCTION
-addBtn.addEventListener('click', async () => {
-    const vel = parseFloat(inVelocity.value);
-    const dis = parseFloat(inDischarge.value);
-
-    if (isNaN(vel) || isNaN(dis)) {
-        alert("Mohon isi angka yang valid!");
-        return;
-    }
-
-    addBtn.disabled = true;
-    addBtn.textContent = "Menyimpan...";
-
-    try {
-        const { error } = await supabase
-            .from('river_data_real')
-            .insert({
-                timestamp: new Date().toISOString(),
-                velocity: vel,
-                discharge: dis,
-                moving_flag: true
-                // We don't add raw_json here for manual entry, it will just be null
-            });
-
-        if (error) throw error;
-
-        // Reset Inputs
-        inVelocity.value = '';
-        inDischarge.value = '';
-        loadData(); // Refresh UI
-
-    } catch (err) {
-        alert("Error: " + err.message);
-    } finally {
-        addBtn.disabled = false;
-        addBtn.textContent = "➕ Tambah Data Manual";
-    }
-});
-
-// 6. LOGOUT
+// LOGOUT
 document.getElementById('logoutBtn').addEventListener('click', async () => {
     await supabase.auth.signOut();
     window.location.href = 'login.html';
 });
 
-// Start
-checkSession();
+// =========================================
+//  LOAD DEVICES
+// =========================================
+async function loadDevices() {
+    try {
+        const { data, error } = await supabase.from('devices').select('*').order('id', { ascending: true });
+        if (error) throw error;
+        currentDevices = data;
+        renderTable(data);
+        updateStats(data);
+    } catch (err) { console.error(err); }
+}
+
+function renderTable(devices) {
+    if (!devices.length) {
+        deviceTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center">Data kosong.</td></tr>`;
+        return;
+    }
+    let html = '';
+    devices.forEach(dev => {
+        const statusColor = dev.status === 'online' ? 'online' : 'offline';
+        const ipDisplay = dev.tailscale_ip ? `<code style="background:#eee;padding:2px 5px;border-radius:4px">${dev.tailscale_ip}</code>` : '-';
+
+        html += `
+            <tr>
+                <td>#${dev.id}</td>
+                <td><strong>${dev.name}</strong><br><small>${dev.location_lat.toFixed(4)}, ${dev.location_lng.toFixed(4)}</small></td>
+                <td>${ipDisplay}</td>
+                <td><span class="status-dot ${statusColor}"></span> ${dev.status.toUpperCase()}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn-icon btn-data" onclick="window.openManualData(${dev.id})" title="Input Data"><i class="fas fa-plus-circle"></i></button>
+                        <button class="btn-icon btn-hist" onclick="window.openDataHistory(${dev.id})" title="Riwayat Data"><i class="fas fa-history"></i></button>
+                        <button class="btn-icon btn-edit" onclick="window.openEditDevice(${dev.id})" title="Edit"><i class="fas fa-edit"></i></button>
+                        <button class="btn-icon btn-del" onclick="window.deleteDevice(${dev.id})" title="Hapus Alat"><i class="fas fa-trash"></i></button>
+                    </div>
+                </td>
+            </tr>`;
+    });
+    deviceTableBody.innerHTML = html;
+}
+
+function updateStats(devices) {
+    const total = devices.length;
+    const online = devices.filter(d => d.status === 'online').length;
+    document.getElementById('total-devices').textContent = total;
+    document.getElementById('online-devices').textContent = online;
+    document.getElementById('offline-devices').textContent = total - online;
+}
+
+// =========================================
+//  CREATE & EDIT DEVICE
+// =========================================
+addForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    // ... (Logika sama seperti sebelumnya) ...
+    const name = document.getElementById('dev-name').value;
+    const lat = document.getElementById('dev-lat').value;
+    const lng = document.getElementById('dev-lng').value;
+    const ip = document.getElementById('dev-ip').value;
+    const desc = document.getElementById('dev-desc').value;
+    try {
+        await supabase.from('devices').insert([{ name, location_lat: lat, location_lng: lng, tailscale_ip: ip, description: desc, status: 'offline' }]);
+        document.getElementById('addDeviceModal').style.display = 'none';
+        addForm.reset(); loadDevices();
+    } catch (err) { alert(err.message); }
+});
+
+// =========================================
+//  UPDATE: EDIT DEVICE
+// =========================================
+
+// 1. Buka Modal & Isi Data Lama
+window.openEditDevice = (id) => {
+    const dev = currentDevices.find(d => d.id === id);
+    if (!dev) return;
+
+    // Simpan ID Asli (Primary Key lama) untuk referensi "WHERE"
+    document.getElementById('original-id').value = dev.id;
+    
+    // Isi Form
+    document.getElementById('edit-new-id').value = dev.id; // Defaultnya sama
+    document.getElementById('edit-name').value = dev.name;
+    document.getElementById('edit-lat').value = dev.location_lat;
+    document.getElementById('edit-lng').value = dev.location_lng;
+    document.getElementById('edit-ip').value = dev.tailscale_ip || '';
+    document.getElementById('edit-status').value = dev.status;
+
+    document.getElementById('editDeviceModal').style.display = 'flex';
+};
+
+// 2. Simpan Perubahan (Termasuk ID Baru)
+editForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const originalId = document.getElementById('original-id').value; // ID Lama (Target)
+    const newId = document.getElementById('edit-new-id').value;      // ID Baru (Value)
+    
+    const updates = {
+        id: newId, // Kita paksa update ID
+        name: document.getElementById('edit-name').value,
+        location_lat: document.getElementById('edit-lat').value,
+        location_lng: document.getElementById('edit-lng').value,
+        tailscale_ip: document.getElementById('edit-ip').value,
+        status: document.getElementById('edit-status').value
+    };
+
+    try {
+        // Cek dulu apakah ID Baru sudah dipakai alat lain?
+        if (originalId !== newId) {
+            const { data: existing } = await supabase
+                .from('devices')
+                .select('id')
+                .eq('id', newId)
+                .single();
+            
+            if (existing) {
+                throw new Error(`Device ID ${newId} sudah digunakan oleh alat lain! Ganti angka lain.`);
+            }
+        }
+
+        // Lakukan Update: "Ubah baris yang ID-nya Original-ID"
+        const { error } = await supabase
+            .from('devices')
+            .update(updates)
+            .eq('id', originalId);
+
+        if (error) throw error;
+
+        alert(`Berhasil! Device ID berubah dari ${originalId} menjadi ${newId}.`);
+        document.getElementById('editDeviceModal').style.display = 'none';
+        loadDevices(); // Refresh tabel
+
+    } catch (err) {
+        alert("Gagal update: " + err.message);
+    }
+});
+
+// =========================================
+//  MANUAL DATA ENTRY (WITH TIME)
+// =========================================
+window.openManualData = (id) => {
+    const dev = currentDevices.find(d => d.id === id);
+    document.getElementById('manual-dev-id').value = id;
+    document.getElementById('manual-dev-name').textContent = dev.name;
+    document.getElementById('manualDataModal').style.display = 'flex';
+};
+
+manualForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const device_id = document.getElementById('manual-dev-id').value;
+    const velocity = document.getElementById('man-vel').value;
+    const discharge = document.getElementById('man-dis').value;
+    const water_level = document.getElementById('man-lvl').value || null;
+    
+    // AMBIL WAKTU MANUAL (Jika kosong, gunakan NOW)
+    const timeInput = document.getElementById('man-time').value;
+    const timestamp = timeInput ? new Date(timeInput).toISOString() : new Date().toISOString();
+
+    try {
+        const { error } = await supabase.from('sensor_readings').insert([{
+            device_id, velocity, discharge, water_level, timestamp
+        }]);
+        if (error) throw error;
+        alert("Data manual berhasil disimpan!");
+        document.getElementById('manualDataModal').style.display = 'none';
+        manualForm.reset();
+    } catch (err) { alert("Gagal: " + err.message); }
+});
+
+// =========================================
+//  DATA HISTORY & DELETE DATA (BARU)
+// =========================================
+window.openDataHistory = async (deviceId) => {
+    const dev = currentDevices.find(d => d.id === deviceId);
+    document.getElementById('history-dev-name').textContent = dev.name;
+    
+    // Tampilkan Modal dulu dengan status loading
+    document.getElementById('dataHistoryModal').style.display = 'flex';
+    historyTableBody.innerHTML = `<tr><td colspan="4" style="text-align:center">Memuat riwayat...</td></tr>`;
+
+    try {
+        // Ambil data sensor_readings
+        const { data, error } = await supabase
+            .from('sensor_readings')
+            .select('*')
+            .eq('device_id', deviceId)
+            .order('timestamp', { ascending: false }); // Paling baru diatas
+
+        if (error) throw error;
+
+        renderHistoryTable(data, deviceId); // Pass deviceId untuk reload nanti
+
+    } catch (err) {
+        historyTableBody.innerHTML = `<tr><td colspan="4" style="color:red">Error: ${err.message}</td></tr>`;
+    }
+};
+
+function renderHistoryTable(data, deviceId) {
+    if (!data || data.length === 0) {
+        historyTableBody.innerHTML = `<tr><td colspan="4" style="text-align:center">Belum ada data sensor.</td></tr>`;
+        return;
+    }
+
+    let html = '';
+    data.forEach(row => {
+        const dateObj = new Date(row.timestamp);
+        // Format Tanggal: DD/MM/YYYY HH:mm
+        const dateStr = dateObj.toLocaleDateString('id-ID') + ' ' + dateObj.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+
+        html += `
+            <tr>
+                <td>${dateStr}</td>
+                <td style="font-weight:bold">${row.discharge.toFixed(2)}</td>
+                <td>${row.velocity.toFixed(2)}</td>
+                <td>
+                    <button class="btn-icon btn-del" onclick="window.deleteReading(${row.id}, ${deviceId})" title="Hapus Data Ini">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    historyTableBody.innerHTML = html;
+}
+
+// DELETE SINGLE READING ROW
+window.deleteReading = async (readingId, deviceId) => {
+    if(!confirm("Hapus baris data ini?")) return;
+
+    try {
+        const { error } = await supabase
+            .from('sensor_readings')
+            .delete()
+            .eq('id', readingId);
+
+        if(error) throw error;
+
+        // Reload tabel history tanpa tutup modal
+        window.openDataHistory(deviceId); 
+
+    } catch (err) {
+        alert("Gagal menghapus: " + err.message);
+    }
+};
+
+// =========================================
+//  DELETE DEVICE (Dan semua datanya)
+// =========================================
+window.deleteDevice = async (id) => {
+    if (!confirm("Hapus alat ini? SEMUA DATA SENSORNYA AKAN HILANG PERMANEN.")) return;
+    try {
+        await supabase.from('devices').delete().eq('id', id);
+        loadDevices();
+    } catch (err) { alert(err.message); }
+};

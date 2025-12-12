@@ -1,83 +1,190 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Management - SERABI</title>
+    <title>Dashboard Petugas - SERABI</title>
+    
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-<div class="admin-wrapper">
-    
-    <nav class="sidebar">
-        <div class="sidebar-header">
-            <span>SERABI ADMIN</span>
-        </div>
-        <ul class="sidebar-menu">
-            <li><a href="#" class="active">📊 <span>Manajemen Data</span></a></li>
-            <li><a href="visualization.html" target="_blank">📈 <span>Lihat Grafik</span></a></li>
-            <li><a href="index.html" target="_blank">🌐 <span>Halaman Depan</span></a></li>
-            <li><a href="#" id="logoutBtn" class="logout-link">🚪 <span>Logout</span></a></li>
-        </ul>
-    </nav>
+    <div class="admin-wrapper">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-water"></i> <span>SERABI Admin</span>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                <li><a href="index.html"><i class="fas fa-home"></i> <span>Ke Menu Utama</span></a></li>
+                <li><a href="#" id="logoutBtn" class="logout-link"><i class="fas fa-sign-out-alt"></i> <span>Keluar</span></a></li>
+            </ul>
+        </nav>
 
-    <main class="admin-content">
-        
-        <div class="admin-header">
-            <div>
-                <h1>Manajemen Data Sungai</h1>
-                <p>Tambah, Hapus, atau Monitoring Data.</p>
+        <main class="admin-content">
+            <div class="admin-header">
+                <h2>Manajemen Perangkat Sensor</h2>
+                <button class="btn-add" onclick="openModal('addDeviceModal')">
+                    <i class="fas fa-plus"></i> Tambah Alat
+                </button>
             </div>
-            <div id="userInfo" style="font-weight: bold; color: var(--deep-ocean);">...</div>
-        </div>
 
-        <div class="admin-grid">
-            <div class="stat-card">
-                <h3>Total Record</h3>
-                <div class="stat-number" id="totalCount">0</div>
+            <div class="admin-grid">
+                <div class="stat-card">
+                    <h3>Total Alat</h3>
+                    <div class="stat-number" id="total-devices">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Alat Online</h3>
+                    <div class="stat-number" id="online-devices" style="color:#2dce89">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Alat Offline</h3>
+                    <div class="stat-number" id="offline-devices" style="color:#f5365c">0</div>
+                </div>
             </div>
-            <div class="stat-card" style="border-left-color: #2dce89;">
-                <h3>Status Terkini</h3>
-                <div class="stat-number" id="lastStatus" style="font-size: 1.2rem;">Checking...</div>
-            </div>
-        </div>
 
-        <div class="admin-toolbar">
-            <div class="input-group">
-                <label>Kecepatan (m/s)</label>
-                <input type="number" id="inVelocity" step="0.01" placeholder="0.5">
-            </div>
-            <div class="input-group">
-                <label>Debit (m³/s)</label>
-                <input type="number" id="inDischarge" step="0.01" placeholder="10.5">
-            </div>
-            <button id="addDataBtn" class="btn-add">➕ Tambah Data Manual</button>
-        </div>
-
-        <section class="table-card">
-            <h3 style="margin-top:0; color:var(--deep-ocean);">Data Log (50 Terakhir)</h3>
-            
-            <table id="adminTable">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Waktu</th>
-                        <th>Velocity</th>
-                        <th>Discharge</th>
-                        <th class="action-th">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="adminTableBody">
+            <div class="table-card">
+                <h3>Daftar Lokasi & IP</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nama & Lokasi</th>
+                            <th>IP Tailscale</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="device-table-body">
+                        <tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr>
                     </tbody>
-            </table>
-        </section>
+                </table>
+            </div>
+        </main>
+    </div>
 
-    </main>
-</div>
+    <div id="addDeviceModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('addDeviceModal')">&times;</span>
+            <h2>Tambah Alat Baru</h2>
+            <form id="add-device-form">
+                <div class="form-group">
+                    <label>Nama Lokasi</label>
+                    <input type="text" id="dev-name" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Latitude</label><input type="number" step="any" id="dev-lat" required></div>
+                    <div class="form-group"><label>Longitude</label><input type="number" step="any" id="dev-lng" required></div>
+                </div>
+                <div class="form-group"><label>IP Tailscale</label><input type="text" id="dev-ip"></div>
+                <div class="form-group"><label>Deskripsi</label><input type="text" id="dev-desc"></div>
+                <button type="submit" class="btn-submit">Simpan</button>
+            </form>
+        </div>
+    </div>
 
-<script type="module" src="js/admin.js"></script>
+    <div id="editDeviceModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('editDeviceModal')">&times;</span>
+            <h2>Edit Alat</h2>
+            <form id="edit-device-form">
+                <input type="hidden" id="original-id"> 
+                
+                <div class="form-group" style="background: #fff3cd; padding: 10px; border-radius: 6px; border: 1px solid #ffeeba;">
+                    <label style="color:#856404;">Device ID (Wajib Unik)</label>
+                    <input type="number" id="edit-new-id" required style="font-weight:bold;">
+                    <small style="font-size:0.8rem; color:#856404;">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        Pastikan kode di alat (Python/Arduino) juga disesuaikan dengan ID ini!
+                    </small>
+                </div>
 
+                <div class="form-group">
+                    <label>Nama Lokasi</label>
+                    <input type="text" id="edit-name" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Latitude</label><input type="number" step="any" id="edit-lat" required></div>
+                    <div class="form-group"><label>Longitude</label><input type="number" step="any" id="edit-lng" required></div>
+                </div>
+                <div class="form-group"><label>IP Tailscale</label><input type="text" id="edit-ip"></div>
+                <div class="form-group"><label>Status</label>
+                    <select id="edit-status">
+                        <option value="online">Online</option>
+                        <option value="offline">Offline</option>
+                        <option value="maintenance">Maintenance</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-submit" style="background:#f39c12;">Update Data</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="manualDataModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('manualDataModal')">&times;</span>
+            <h2>Input Data Manual</h2>
+            <p style="color:#666; margin-bottom:15px;">Alat: <strong id="manual-dev-name">...</strong></p>
+            <form id="manual-data-form">
+                <input type="hidden" id="manual-dev-id">
+                
+                <div class="form-group">
+                    <label>Waktu Data (Biarkan kosong untuk "Sekarang")</label>
+                    <input type="datetime-local" id="man-time">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Velocity (m/s)</label>
+                        <input type="number" step="0.01" id="man-vel" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Discharge (m³/s)</label>
+                        <input type="number" step="0.01" id="man-dis" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Water Level (m)</label>
+                    <input type="number" step="0.01" id="man-lvl">
+                </div>
+                <button type="submit" class="btn-submit" style="background:#3498db;">Kirim Data</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="dataHistoryModal" class="modal">
+        <div class="modal-content large-modal"> <span class="close-modal" onclick="closeModal('dataHistoryModal')">&times;</span>
+            <h2>Riwayat Data Sensor</h2>
+            <p>Lokasi: <strong id="history-dev-name">...</strong></p>
+            
+            <div class="scrollable-table-wrapper">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Debit (m³/s)</th>
+                            <th>Vel (m/s)</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body">
+                        </tbody>
+                </table>
+            </div>
+            
+            <button onclick="closeModal('dataHistoryModal')" class="btn-submit" style="background:#777; margin-top:15px;">Tutup</button>
+        </div>
+    </div>
+
+    <script type="module" src="js/admin.js"></script>
+    <script>
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        window.onclick = function(e) { if(e.target.classList.contains('modal')) e.target.style.display = 'none'; }
+    </script>
 </body>
 </html>
