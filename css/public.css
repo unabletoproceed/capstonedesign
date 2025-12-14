@@ -39,7 +39,7 @@
     z-index: 1;
 }
 
-/* --- IKON STATUS --- */
+/* --- IKON STATUS (UPDATED FOR SVG) --- */
 .status-icon-container {
     position: absolute;
     top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -49,23 +49,27 @@
     pointer-events: none;
 }
 
-.status-icon-container i {
-    font-size: 8rem; 
+/* KITA UBAH SELECTOR AGAR MENARGETKAN SVG JUGA */
+.status-icon-container i,
+.status-icon-container svg {
+    font-size: 8rem;       /* Ukuran Besar */
+    width: 8rem;           /* Pastikan lebar ngikut */
+    height: 8rem;          /* Pastikan tinggi ngikut */
     display: block;
-    transition: color 0.5s ease;
+    transition: color 0.5s ease, fill 0.5s ease;
     transform: scale(1);
+    fill: currentColor;    /* Agar warna mengikuti properti 'color' */
 }
 
-/* --- WADAH AIR UTAMA (SOLID BODY - NO IMAGE) --- */
-/* Ini adalah bagian "BADAN" air yang solid. Tidak boleh ada gambar disini */
+/* --- WADAH AIR UTAMA (SOLID BODY) --- */
 .public-water-container {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 20%; /* Tinggi air */
+    height: 20%; 
     
-    /* PENTING: Hanya Warna Solid, Matikan Image */
+    /* PENTING: Matikan background image di sini */
     background-image: none !important; 
     background-color: #29B6F6; 
     
@@ -74,34 +78,24 @@
 }
 
 /* --- GELOMBANG (TOP LAYER ONLY) --- */
-/* Ini adalah "TOPI" gelombang yang duduk di atas badan air solid */
 .public-wave {
     position: absolute;
-    /* Posisikan tepat di atas garis air solid */
-    /* Tinggi gambar 50px, kita tarik ke atas -49px agar overlap 1px (mencegah celah putih) */
     top: -49px; 
     left: 0;
     width: 200%;
     height: 50px;
     
-    /* KUNCI MENGHILANGKAN GARIS: */
-    /* 1. Ulang Horizontal Saja (repeat-x) -> Jangan repeat-y (vertikal) */
     background-repeat: repeat-x; 
-    /* 2. Tempel di Bawah (bottom) agar menyatu dengan air padat */
     background-position: bottom;
-    /* 3. Ukuran Pas */
     background-size: 50% 100%;
     
-    /* Gambar Default (Aman) */
-    /* Gunakan SVG dengan FILL WARNA SOLID yang SAMA dengan air bawahnya (#29B6F6) */
+    /* Default: Warna Air Aman (#29B6F6) */
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320' preserveAspectRatio='none'%3E%3Cpath fill='%2329B6F6' fill-opacity='1' d='M0,160L48,170.7C96,181,192,203,288,197.3C384,192,480,160,576,144C672,128,768,128,864,149.3C960,171,1056,213,1152,213.3C1248,213,1344,171,1392,149.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
     
-    transition: background-image 0.5s ease; /* Transisi halus saat ganti warna */
+    transition: background-image 0.5s ease;
 }
 
-/* Layer Tambahan (Sembunyikan jika bikin masalah, atau aktifkan 1 saja) */
 .p-wave1 { z-index: 3; opacity: 1; margin-top: 0px; animation: waveMove 6s linear infinite; }
-/* Matikan layer 2 & 3 agar tidak tumpang tindih aneh */
 .p-wave2, .p-wave3 { display: none !important; }
 
 @keyframes waveMove {
@@ -113,42 +107,61 @@
    LOGIKA STATE (AMAN / SIAGA / BAHAYA)
    ========================================= */
 
-/* --- 1. AMAN --- */
+/* --- 1. STATE: AMAN --- */
 .scene-box.level-aman { background: linear-gradient(to bottom, #E1F5FE, #B3E5FC); }
-.scene-box.level-aman .status-icon-container i { color: #2dce89; opacity: 0.8; transform: scale(1); animation: none; }
+
+/* Update Selector SVG */
+.scene-box.level-aman .status-icon-container svg { 
+    color: #2dce89; /* Hijau */
+    opacity: 0.8; 
+    transform: scale(1); 
+}
+
 .scene-box.level-aman .public-water-container {
     height: 25%; 
     background-color: #29B6F6; 
 }
-/* SVG Warna #29B6F6 */
 .scene-box.level-aman .public-wave {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320' preserveAspectRatio='none'%3E%3Cpath fill='%2329B6F6' fill-opacity='1' d='M0,160L48,170.7C96,181,192,203,288,197.3C384,192,480,160,576,144C672,128,768,128,864,149.3C960,171,1056,213,1152,213.3C1248,213,1344,171,1392,149.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
 }
 .scene-box.level-aman .p-wave1 { animation-duration: 8s; }
 
 
-/* --- 2. SIAGA --- */
+/* --- 2. STATE: SIAGA --- */
 .scene-box.level-siaga { background: linear-gradient(to bottom, #E3F2FD, #90CAF9); }
-.scene-box.level-siaga .status-icon-container i { color: #FBC02D; opacity: 1; transform: scale(1.2); animation: pulseSlow 3s infinite; }
+
+/* Update Selector SVG */
+.scene-box.level-siaga .status-icon-container svg { 
+    color: #FBC02D; /* Kuning */
+    opacity: 1; 
+    transform: scale(1.2);
+    animation: pulseSlow 3s infinite;
+}
+
 .scene-box.level-siaga .public-water-container {
     background-color: #0288D1; 
     animation: tideBob 4s ease-in-out infinite;
 }
-/* SVG Warna #0288D1 */
 .scene-box.level-siaga .public-wave {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320' preserveAspectRatio='none'%3E%3Cpath fill='%230288D1' fill-opacity='1' d='M0,160L48,170.7C96,181,192,203,288,197.3C384,192,480,160,576,144C672,128,768,128,864,149.3C960,171,1056,213,1152,213.3C1248,213,1344,171,1392,149.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
 }
 .scene-box.level-siaga .p-wave1 { animation-duration: 4s; }
 
 
-/* --- 3. BAHAYA --- */
+/* --- 3. STATE: BAHAYA --- */
 .scene-box.level-bahaya { background: linear-gradient(to bottom, #37474F, #263238); }
-.scene-box.level-bahaya .status-icon-container i { color: #FF5252; opacity: 1; animation: alarmPulse 2s infinite; }
+
+/* Update Selector SVG */
+.scene-box.level-bahaya .status-icon-container svg { 
+    color: #FF5252; /* Merah */
+    opacity: 1; 
+    animation: alarmPulse 2s infinite; 
+}
+
 .scene-box.level-bahaya .public-water-container {
     height: 85%; 
     background-color: #01579B; 
 }
-/* SVG Warna #01579B */
 .scene-box.level-bahaya .public-wave {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320' preserveAspectRatio='none'%3E%3Cpath fill='%2301579B' fill-opacity='1' d='M0,160L48,170.7C96,181,192,203,288,197.3C384,192,480,160,576,144C672,128,768,128,864,149.3C960,171,1056,213,1152,213.3C1248,213,1344,171,1392,149.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
 }
@@ -158,7 +171,11 @@
 /* ANIMASI & LAINNYA */
 @keyframes tideBob { 0% { height: 45%; } 50% { height: 50%; } 100% { height: 45%; } }
 @keyframes pulseSlow { 0% { transform: scale(1.2); opacity: 0.9; } 50% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(1.2); opacity: 0.9; } }
-@keyframes alarmPulse { 0% { transform: scale(1.4); text-shadow: 0 0 0 rgba(255, 82, 82, 0.4); } 50% { transform: scale(1.5); text-shadow: 0 0 30px rgba(255, 82, 82, 0.8); } 100% { transform: scale(1.4); text-shadow: 0 0 0 rgba(255, 82, 82, 0.4); } }
+@keyframes alarmPulse { 
+    0% { transform: scale(1.4); filter: drop-shadow(0 0 0 rgba(255, 82, 82, 0.4)); } 
+    50% { transform: scale(1.5); filter: drop-shadow(0 0 20px rgba(255, 82, 82, 0.8)); } 
+    100% { transform: scale(1.4); filter: drop-shadow(0 0 0 rgba(255, 82, 82, 0.4)); } 
+}
 
 /* HAPUS RAIN EFFECT TOTAL AGAR BERSIH */
 .rain { display: none !important; }
