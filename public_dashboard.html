@@ -3,12 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Dashboard data sensor banjir SERABI.">
+    <meta name="description" content="Dashboard data sensor banjir SERABI. Akses data historis debit air dan kecepatan arus sungai.">
+    <meta name="theme-color" content="#0A3D52">
     <title>Public Dashboard - SERABI</title>
-    <link rel="stylesheet" href="css/style.css">
     
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/lang.js"></script>
+    <link rel="preconnect" href="https://ohbpqbhphpdlqzdnvtov.supabase.co" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+    <style>
+        :root { --deep-ocean: #0A3D52; --water-dark: #006064; --bg-page: #f8f9fe; --white: #ffffff; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background-color: var(--bg-page); color: var(--deep-ocean); }
+        
+        /* Navbar */
+        .navbar { background: var(--white); height: 60px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 0 20px; }
+        .nav-container { width: 100%; max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--deep-ocean); text-decoration: none; }
+        .nav-links { list-style: none; display: flex; gap: 20px; padding: 0; margin: 0; }
+        .nav-links a { text-decoration: none; color: #555; font-weight: 600; font-size: 0.9rem; }
+        
+        /* Layout */
+        .dashboard-container { max-width: 1200px; margin: 30px auto; padding: 0 20px; display: flex; flex-direction: column; gap: 20px; }
+        
+        /* Hero */
+        .hero-section { background: linear-gradient(87deg, var(--deep-ocean) 0%, var(--water-dark) 100%); border-radius: 12px; padding: 40px 20px; color: white; text-align: center; }
+        .hero-section h1 { margin: 0 0 10px 0; font-size: 2rem; }
+        .hero-section p { margin: 0; opacity: 0.9; }
+
+        /* Controls */
+        .controls-bar { background: white; padding: 20px; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .control-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 150px; }
+        .control-group label { font-size: 0.85rem; font-weight: bold; color: #555; }
+        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 6px; width: 100%; box-sizing: border-box; }
+        
+        .btn-export { background: var(--water-dark); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 42px; margin-top: auto; }
+
+        /* Table */
+        .table-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow-x: auto; min-height: 400px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; padding: 15px; background: #f8f9fe; border-bottom: 2px solid #eee; color: var(--deep-ocean); }
+        td { padding: 15px; border-bottom: 1px solid #eee; color: #555; font-size: 0.95rem; }
+        
+        /* Badges */
+        .badge { padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: inline-block; }
+        .badge-normal { background: #e0f7fa; color: #006064; }
+        .badge-warning { background: #fff3e0; color: #e65100; }
+        .badge-danger { background: #ffebee; color: #c62828; }
+
+        /* Pagination */
+        .pagination { display: flex; justify-content: flex-end; align-items: center; gap: 15px; margin-top: 20px; }
+        .page-btn { padding: 8px 16px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px; }
+        .page-btn:disabled { background: #f5f5f5; color: #ccc; cursor: not-allowed; }
+
+        /* SKELETON LOADING (Mencegah Layout Shift) */
+        .skeleton { background: #eee; height: 20px; width: 100%; border-radius: 4px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+        
+        /* Utility */
+        .hidden { display: none !important; }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="js/lang.js" defer></script>
+    <script type="module" src="js/public_dashboard.js" defer></script>
 </head>
 <body>
 
@@ -24,9 +80,9 @@
         </div>
     </nav>
 
-    <div class="dashboard-container">
+    <main class="dashboard-container">
         
-        <header class="hero-section" style="padding: 30px; margin-bottom: 20px;">
+        <header class="hero-section">
             <div class="hero-content">
                 <h1>Data Historis Sungai</h1>
                 <p>Akses terbuka data pemantauan sensor radar.</p>
@@ -43,63 +99,61 @@
 
             <div class="control-group">
                 <label for="dateFilter">Tanggal:</label>
-                <input type="date" id="dateFilter" name="dateFilter" title="Filter berdasarkan tanggal">
+                <input type="date" id="dateFilter" name="dateFilter" title="Filter Tanggal">
             </div>
 
             <div class="control-group">
-                <label for="searchInput" class="sr-only" style="display:none;">Cari Data</label>
-                <input type="text" id="searchInput" placeholder="Cari data..." title="Cari data sensor">
-                
-                <label for="rowsPerPage" class="sr-only" style="display:none;">Baris per halaman</label>
+                <label for="searchInput">Cari Data:</label>
+                <input type="text" id="searchInput" placeholder="Ketik..." title="Cari data">
+            </div>
+
+            <div class="control-group" style="max-width: 100px;">
+                <label for="rowsPerPage">Baris:</label>
                 <select id="rowsPerPage" title="Jumlah baris per halaman">
-                    <option value="10">10 Baris</option>
-                    <option value="25">25 Baris</option>
-                    <option value="50">50 Baris</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
                 </select>
             </div>
 
-            <button onclick="downloadCSV()" class="btn-export" title="Unduh data dalam format CSV">
-                📥 Download CSV
+            <button onclick="downloadCSV()" class="btn-export" title="Unduh CSV">
+                📥 CSV
             </button>
         </section>
 
         <section class="table-card">
-            <div id="loading-indicator" style="text-align:center; padding:20px; color:#666;">
-                Memuat data...
-            </div>
-            
-            <table id="dataTable" style="display:none;">
+            <table id="dataTable">
                 <thead>
                     <tr>
-                        <th>Waktu</th>
-                        <th>Lokasi (Alat)</th>
-                        <th>TMA (m)</th>
-                        <th>Vel (m/s)</th>
-                        <th>Debit (m³/s)</th>
-                        <th>Status</th>
+                        <th width="20%">Waktu</th>
+                        <th width="25%">Lokasi</th>
+                        <th width="15%">TMA (m)</th>
+                        <th width="15%">Vel (m/s)</th>
+                        <th width="15%">Debit (m³/s)</th>
+                        <th width="10%">Status</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
-                    </tbody>
+                    <tr class="skeleton-row"><td colspan="6"><div class="skeleton"></div></td></tr>
+                    <tr class="skeleton-row"><td colspan="6"><div class="skeleton"></div></td></tr>
+                    <tr class="skeleton-row"><td colspan="6"><div class="skeleton"></div></td></tr>
+                    <tr class="skeleton-row"><td colspan="6"><div class="skeleton"></div></td></tr>
+                    <tr class="skeleton-row"><td colspan="6"><div class="skeleton"></div></td></tr>
+                </tbody>
             </table>
 
             <div class="pagination">
-                <button id="prevBtn" class="page-btn" onclick="changePage(-1)" title="Halaman Sebelumnya">Prev</button>
+                <button id="prevBtn" class="page-btn" onclick="window.changePage(-1)" disabled>Prev</button>
                 <span id="pageInfo">Page 1</span>
-                <button id="nextBtn" class="page-btn" onclick="changePage(1)" title="Halaman Selanjutnya">Next</button>
+                <button id="nextBtn" class="page-btn" onclick="window.changePage(1)" disabled>Next</button>
             </div>
         </section>
 
-    </div>
+    </main>
 
-    <footer class="main-footer">
-        <div class="footer-container">
-            <div class="footer-bottom">
-                <p>&copy; 2025 River Monitoring System.</p>
-            </div>
-        </div>
+    <footer class="main-footer" style="text-align:center; padding: 20px; color:#888; font-size:0.8rem;">
+        <p>&copy; 2025 River Monitoring System.</p>
     </footer>
 
-    <script type="module" src="js/public_dashboard.js"></script>
 </body>
 </html>
