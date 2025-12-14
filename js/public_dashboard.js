@@ -22,7 +22,7 @@ async function fetchData() {
     try {
         // Fetch last 1000 records (for performance, we limit the initial fetch)
         const { data, error } = await supabase
-            .from('radar_data')
+            .from('sim_data')
             .select('*')
             .order('timestamp', { ascending: false })
             .limit(1000);
