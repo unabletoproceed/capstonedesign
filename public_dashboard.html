@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html lang="id"> <head>
+<html lang="id">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dashboard data sensor banjir SERABI.">
     <title>Public Dashboard - SERABI</title>
     <link rel="stylesheet" href="css/style.css">
     
@@ -33,27 +35,30 @@
 
         <section class="controls-bar">
             <div class="control-group">
-                <label>Lokasi / Alat:</label>
-                <select id="deviceFilter">
+                <label for="deviceFilter">Lokasi / Alat:</label>
+                <select id="deviceFilter" name="deviceFilter" title="Pilih Lokasi Sensor">
                     <option value="">Semua Lokasi</option>
-                    </select>
+                </select>
             </div>
 
             <div class="control-group">
-                <label>Tanggal:</label>
-                <input type="date" id="dateFilter">
+                <label for="dateFilter">Tanggal:</label>
+                <input type="date" id="dateFilter" name="dateFilter" title="Filter berdasarkan tanggal">
             </div>
 
             <div class="control-group">
-                <input type="text" id="searchInput" placeholder="Cari data...">
-                <select id="rowsPerPage">
+                <label for="searchInput" class="sr-only" style="display:none;">Cari Data</label>
+                <input type="text" id="searchInput" placeholder="Cari data..." title="Cari data sensor">
+                
+                <label for="rowsPerPage" class="sr-only" style="display:none;">Baris per halaman</label>
+                <select id="rowsPerPage" title="Jumlah baris per halaman">
                     <option value="10">10 Baris</option>
                     <option value="25">25 Baris</option>
                     <option value="50">50 Baris</option>
                 </select>
             </div>
 
-            <button onclick="downloadCSV()" class="btn-export">
+            <button onclick="downloadCSV()" class="btn-export" title="Unduh data dalam format CSV">
                 📥 Download CSV
             </button>
         </section>
@@ -67,7 +72,9 @@
                 <thead>
                     <tr>
                         <th>Waktu</th>
-                        <th>Lokasi (Alat)</th> <th>TMA (m)</th>      <th>Vel (m/s)</th>
+                        <th>Lokasi (Alat)</th>
+                        <th>TMA (m)</th>
+                        <th>Vel (m/s)</th>
                         <th>Debit (m³/s)</th>
                         <th>Status</th>
                     </tr>
@@ -77,9 +84,9 @@
             </table>
 
             <div class="pagination">
-                <button id="prevBtn" class="page-btn" onclick="changePage(-1)">Prev</button>
+                <button id="prevBtn" class="page-btn" onclick="changePage(-1)" title="Halaman Sebelumnya">Prev</button>
                 <span id="pageInfo">Page 1</span>
-                <button id="nextBtn" class="page-btn" onclick="changePage(1)">Next</button>
+                <button id="nextBtn" class="page-btn" onclick="changePage(1)" title="Halaman Selanjutnya">Next</button>
             </div>
         </section>
 
