@@ -5,109 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Peta Persebaran Sensor - SERABI</title>
     
-    <link rel="preload" href="css/style.css" as="style">
+    <link rel="preconnect" href="https://a.basemaps.cartocdn.com">
+    <link rel="preconnect" href="https://b.basemaps.cartocdn.com">
+    <link rel="preconnect" href="https://c.basemaps.cartocdn.com">
+    <link rel="preconnect" href="https://d.basemaps.cartocdn.com">
+
     <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style">
 
-    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
+    <style>
+        /* Global & Reset */
+        :root { --deep-ocean: #0A3D52; --water-dark: #006064; --bg-light: #f8f9fe; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        
+        /* Map Container */
+        #map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background: #f0f0f0; }
+
+        /* Navbar */
+        .navbar {
+            position: absolute; top: 0; left: 0; width: 100%; z-index: 1000;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); height: 60px; display: flex; align-items: center;
+        }
+        .nav-container {
+            width: 90%; max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--deep-ocean); text-decoration: none; letter-spacing: -0.5px; }
+        .nav-links { list-style: none; display: flex; gap: 20px; padding: 0; margin: 0; }
+        .nav-links a { text-decoration: none; color: #555; font-weight: 500; font-size: 0.9rem; transition: 0.3s; }
+        .nav-links a:hover { color: var(--deep-ocean); }
+        .lang-btn { background: var(--deep-ocean); color: white !important; padding: 8px 15px; border-radius: 50px; }
+        .lang-btn:hover { background: var(--water-dark); transform: translateY(-2px); }
+
+        /* Floating Title Card */
+        .map-title-card {
+            position: absolute; top: 80px; left: 50%; transform: translateX(-50%); z-index: 999;
+            background: white; padding: 12px 25px; border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15); text-align: center; min-width: 280px;
+            animation: slideDown 0.5s ease-out; will-change: transform, opacity;
+        }
+        .map-title-card h2 { margin: 0; font-size: 1rem; color: var(--deep-ocean); }
+        .map-title-card p { margin: 0; font-size: 0.75rem; color: #666; }
+
+        @keyframes slideDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+        /* SVG Icons */
+        .svg-icon { width: 1em; height: 1em; vertical-align: -0.125em; fill: currentColor; display: inline-block; }
+
+        /* Popup Styles */
+        .custom-popup .leaflet-popup-content-wrapper { border-radius: 8px; padding: 0; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .leaflet-popup-content { margin: 0; width: 200px !important; }
+        .popup-header { background: var(--deep-ocean); color: white; padding: 8px 12px; font-size: 0.85rem; font-weight: bold; display: flex; align-items: center; gap: 6px; }
+        .popup-body { padding: 12px; }
+        .status-badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; color: white; margin-bottom: 6px; }
+        .online { background: #2dce89; } .offline { background: #f5365c; }
+        .btn-check {
+            display: block; width: 100%; padding: 6px; background: var(--water-dark); color: white;
+            text-align: center; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.8rem; box-sizing: border-box; margin-top: 5px;
+        }
+        .btn-check:hover { background: #004d40; }
+    </style>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
-
-    <style>
-        /* CSS SVG Icon Pengganti FontAwesome */
-        .svg-icon {
-            width: 1em; height: 1em;
-            vertical-align: -0.125em;
-            fill: currentColor;
-            display: inline-block;
-        }
-
-        /* Reset Margin agar Full Screen */
-        body, html {
-            margin: 0; padding: 0;
-            height: 100%; overflow: hidden;
-            font-family: sans-serif;
-        }
-
-        /* PETA FULL SCREEN */
-        #map {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 0;
-            background: #f0f0f0; /* Placeholder color saat peta loading */
-        }
-
-        /* NAVBAR MELAYANG */
-        .navbar {
-            position: absolute; top: 0; left: 0; width: 100%;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(5px);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        /* JUDUL MELAYANG */
-        .map-title-card {
-            position: absolute;
-            top: 90px; left: 50%;
-            transform: translateX(-50%);
-            z-index: 999;
-            background: white;
-            padding: 15px 30px;
-            border-radius: 50px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            text-align: center;
-            min-width: 300px;
-            animation: slideDown 0.5s ease-out;
-            /* Optimasi Rendering */
-            will-change: transform, opacity;
-        }
-
-        .map-title-card h2 { margin: 0; font-size: 1.1rem; color: var(--deep-ocean); }
-        .map-title-card p { margin: 2px 0 0; font-size: 0.8rem; color: #666; }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translate(-50%, -20px); }
-            to { opacity: 1; transform: translate(-50%, 0); }
-        }
-
-        /* Custom Popup Style */
-        .custom-popup .leaflet-popup-content-wrapper {
-            border-radius: 12px; padding: 0; overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-        .leaflet-popup-content { margin: 0; width: 220px !important; }
-        
-        .popup-header {
-            background: var(--deep-ocean); color: white;
-            padding: 10px 15px; font-size: 0.9rem; font-weight: bold;
-            display: flex; align-items: center; gap: 8px;
-        }
-        .popup-body { padding: 15px; }
-        
-        .status-badge {
-            display: inline-block; padding: 4px 10px; border-radius: 4px; 
-            font-size: 0.7rem; font-weight: bold; color: white; margin-bottom: 8px;
-        }
-        .online { background: #2dce89; }
-        .offline { background: #f5365c; }
-
-        .btn-check {
-            display: block; width: 100%; padding: 8px; 
-            background: var(--water-dark); color: white; text-align: center; 
-            text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 0.85rem;
-            box-sizing: border-box; /* Fix padding issue */
-        }
-        .btn-check:hover { background: #0A3D52; }
-
-    </style>
 </head>
 <body>
 
     <nav class="navbar">
         <div class="nav-container">
-            <a href="index.html" class="logo" style="color:var(--deep-ocean)">SERABI</a>
+            <a href="index.html" class="logo">SERABI</a>
             <ul class="nav-links">
                 <li><a href="index.html">Kembali</a></li>
                 <li><a href="login.html" class="lang-btn">Login Petugas</a></li>
@@ -125,72 +92,76 @@
     <script type="module">
         import { supabase } from './js/supabase.js';
 
-        // Fungsi inisialisasi peta
         function initMap() {
-            // Cek apakah Leaflet (L) sudah load
             if (typeof L === 'undefined') {
-                // Jika belum, tunggu 100ms dan coba lagi
-                setTimeout(initMap, 100);
+                setTimeout(initMap, 50); // Retry faster (50ms)
                 return;
             }
 
             const map = L.map('map', {
-                zoomControl: false 
+                zoomControl: false,
+                fadeAnimation: true,
+                markerZoomAnimation: true
             }).setView([-6.97197, 107.62969], 13);
 
             L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-            // OPTIMASI: Ganti Tile Layer ke CartoDB Voyager (Lebih ringan & Cepat)
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            // OPTIMIZATION: Removed @2x to serve standard resolution tiles (smaller size)
+            // Added explicit subdomains for parallel downloading
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
                 subdomains: 'abcd',
-                maxZoom: 19
+                maxZoom: 19,
+                // Ensure browser caches these tiles aggressively
+                crossOrigin: true
             }).addTo(map);
 
             loadDevices(map);
         }
 
-        // Load Data Alat
         async function loadDevices(map) {
             try {
-                const { data: devices, error } = await supabase.from('devices').select('*');
+                // Select only needed columns to reduce JSON size
+                const { data: devices, error } = await supabase
+                    .from('devices')
+                    .select('id, name, status, location_lat, location_lng');
+                
                 if (error) throw error;
                 if (!devices) return;
 
-                // SVG String untuk Icon Map Pin (Pengganti FontAwesome)
-                const pinIconSVG = `<svg class="svg-icon" viewBox="0 0 384 512"><path d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0zM192 272c44.183 0 80-35.817 80-80s-35.817-80-80-80-80 35.817-80 80 35.817 80 80 80z"/></svg>`;
+                // Simple optimized SVG Pin
+                const pinIconSVG = `<svg class="svg-icon" viewBox="0 0 384 512" style="width:14px;height:14px"><path d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0zM192 272c44.183 0 80-35.817 80-80s-35.817-80-80-80-80 35.817-80 80 35.817 80 80 80z"/></svg>`;
 
-                devices.forEach(device => {
-                    const isOnline = device.status === 'online';
+                const markers = [];
+                
+                devices.forEach(dev => {
+                    const isOnline = dev.status === 'online';
                     const statusClass = isOnline ? 'online' : 'offline';
                     
                     const popupHTML = `
                         <div class="popup-header">
-                            ${pinIconSVG} <span>${device.name}</span>
+                            ${pinIconSVG} <span>${dev.name}</span>
                         </div>
                         <div class="popup-body">
-                            <span class="status-badge ${statusClass}">${device.status.toUpperCase()}</span>
-                            <div style="font-size:0.8rem; color:#666; margin-bottom:10px;">
-                                Lat: ${device.location_lat.toFixed(4)}<br>
-                                Lng: ${device.location_lng.toFixed(4)}
+                            <span class="status-badge ${statusClass}">${dev.status.toUpperCase()}</span>
+                            <div style="font-size:0.75rem; color:#666; margin-bottom:8px;">
+                                ${dev.location_lat.toFixed(4)}, ${dev.location_lng.toFixed(4)}
                             </div>
-                            <a href="home_public.html?id=${device.id}" class="btn-check">
-                                Cek Status Air
-                            </a>
+                            <a href="home_public.html?id=${dev.id}" class="btn-check">Cek Status</a>
                         </div>
                     `;
 
-                    L.marker([device.location_lat, device.location_lng])
+                    L.marker([dev.location_lat, dev.location_lng])
                         .addTo(map)
                         .bindPopup(popupHTML, { className: 'custom-popup' });
                 });
 
             } catch (err) {
-                console.error("Gagal load peta:", err);
+                console.error("Map Error:", err);
             }
         }
 
-        // Jalankan saat halaman siap
+        // Start initialization immediately
         initMap();
     </script>
 </body>
