@@ -932,14 +932,32 @@ input:checked + .slider:before { transform: translateX(26px); }
 
 /* Error Message */
 .error-msg {
-    color: #f5365c;
-    background: #fff5f5;
-    padding: 10px;
+    display: none; /* Sembunyikan secara default */
+    background-color: #ffebee; /* Latar belakang merah muda */
+    color: #c62828; /* Teks merah tua */
+    border: 1px solid #ef9a9a; /* Border merah */
+    padding: 12px;
     border-radius: 6px;
-    font-size: 0.85rem;
     margin-bottom: 20px;
-    display: none; /* Hidden by default */
-    border: 1px solid #fecdd3;
+    font-size: 0.9rem;
+    text-align: center;
+    font-weight: 500;
+    animation: shake 0.3s ease-in-out; /* Animasi getar */
+}
+
+/* Animasi getar agar user sadar ada error */
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+
+/* Style tambahan saat loading button */
+.btn-login-full:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
 }
 
 .login-footer {
