@@ -3,24 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="description" content="Peta persebaran sensor banjir SERABI. Pantau debit air dan status siaga banjir secara real-time di lokasi Anda.">
+    <meta name="theme-color" content="#0A3D52">
     <title>Peta Persebaran Sensor - SERABI</title>
     
-    <link rel="preconnect" href="https://a.basemaps.cartocdn.com">
-    <link rel="preconnect" href="https://b.basemaps.cartocdn.com">
-    <link rel="preconnect" href="https://c.basemaps.cartocdn.com">
-    <link rel="preconnect" href="https://d.basemaps.cartocdn.com">
+    <link rel="preconnect" href="https://a.basemaps.cartocdn.com" crossorigin>
+    <link rel="preconnect" href="https://b.basemaps.cartocdn.com" crossorigin>
+    <link rel="preconnect" href="https://c.basemaps.cartocdn.com" crossorigin>
+    <link rel="preconnect" href="https://d.basemaps.cartocdn.com" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
 
     <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-        /* Global & Reset */
-        :root { --deep-ocean: #0A3D52; --water-dark: #006064; --bg-light: #f8f9fe; }
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        /* Variabel Warna */
+        :root { 
+            --deep-ocean: #0A3D52; 
+            --water-dark: #006064; 
+        }
+
+        /* Reset & Layout */
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f0f0; }
         
-        /* Map Container */
-        #map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background: #f0f0f0; }
+        /* Map Container (Background abu-abu agar loading tile tidak terlalu kontras) */
+        #map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background: #e3e3e3; }
 
         /* Navbar */
         .navbar {
@@ -31,18 +40,18 @@
         .nav-container {
             width: 90%; max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;
         }
-        .logo { font-size: 1.5rem; font-weight: 800; color: var(--deep-ocean); text-decoration: none; letter-spacing: -0.5px; }
-        .nav-links { list-style: none; display: flex; gap: 20px; padding: 0; margin: 0; }
-        .nav-links a { text-decoration: none; color: #555; font-weight: 500; font-size: 0.9rem; transition: 0.3s; }
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--deep-ocean); text-decoration: none; letter-spacing: -0.5px; }
+        .nav-links { list-style: none; display: flex; gap: 15px; padding: 0; margin: 0; }
+        .nav-links a { text-decoration: none; color: #555; font-weight: 500; font-size: 0.85rem; transition: 0.3s; }
         .nav-links a:hover { color: var(--deep-ocean); }
         .lang-btn { background: var(--deep-ocean); color: white !important; padding: 8px 15px; border-radius: 50px; }
-        .lang-btn:hover { background: var(--water-dark); transform: translateY(-2px); }
+        .lang-btn:hover { background: var(--water-dark); transform: translateY(-1px); }
 
         /* Floating Title Card */
         .map-title-card {
             position: absolute; top: 80px; left: 50%; transform: translateX(-50%); z-index: 999;
             background: white; padding: 12px 25px; border-radius: 50px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15); text-align: center; min-width: 280px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15); text-align: center; min-width: 260px;
             animation: slideDown 0.5s ease-out; will-change: transform, opacity;
         }
         .map-title-card h2 { margin: 0; font-size: 1rem; color: var(--deep-ocean); }
@@ -60,8 +69,9 @@
         .popup-body { padding: 12px; }
         .status-badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; color: white; margin-bottom: 6px; }
         .online { background: #2dce89; } .offline { background: #f5365c; }
+        
         .btn-check {
-            display: block; width: 100%; padding: 6px; background: var(--water-dark); color: white;
+            display: block; width: 100%; padding: 8px; background: var(--water-dark); color: white;
             text-align: center; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.8rem; box-sizing: border-box; margin-top: 5px;
         }
         .btn-check:hover { background: #004d40; }
@@ -92,9 +102,13 @@
     <script type="module">
         import { supabase } from './js/supabase.js';
 
+        // Icon Pin SVG (Minimalis & Ringan)
+        const pinIconSVG = `<svg class="svg-icon" viewBox="0 0 384 512" style="width:14px;height:14px"><path d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0zM192 272c44.183 0 80-35.817 80-80s-35.817-80-80-80-80 35.817-80 80 35.817 80 80 80z"/></svg>`;
+
         function initMap() {
+            // Tunggu Leaflet siap
             if (typeof L === 'undefined') {
-                setTimeout(initMap, 50); // Retry faster (50ms)
+                setTimeout(initMap, 50);
                 return;
             }
 
@@ -106,14 +120,13 @@
 
             L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-            // OPTIMIZATION: Removed @2x to serve standard resolution tiles (smaller size)
-            // Added explicit subdomains for parallel downloading
+            // Menggunakan CartoDB Voyager (Gratis, Cepat, PNG)
+            // 'crossOrigin: true' membantu browser caching
             L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap &copy; CARTO',
                 subdomains: 'abcd',
                 maxZoom: 19,
-                // Ensure browser caches these tiles aggressively
-                crossOrigin: true
+                crossOrigin: true 
             }).addTo(map);
 
             loadDevices(map);
@@ -121,7 +134,7 @@
 
         async function loadDevices(map) {
             try {
-                // Select only needed columns to reduce JSON size
+                // Ambil kolom yang diperlukan saja (Optimasi JSON size)
                 const { data: devices, error } = await supabase
                     .from('devices')
                     .select('id, name, status, location_lat, location_lng');
@@ -129,11 +142,6 @@
                 if (error) throw error;
                 if (!devices) return;
 
-                // Simple optimized SVG Pin
-                const pinIconSVG = `<svg class="svg-icon" viewBox="0 0 384 512" style="width:14px;height:14px"><path d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0zM192 272c44.183 0 80-35.817 80-80s-35.817-80-80-80-80 35.817-80 80 35.817 80 80 80z"/></svg>`;
-
-                const markers = [];
-                
                 devices.forEach(dev => {
                     const isOnline = dev.status === 'online';
                     const statusClass = isOnline ? 'online' : 'offline';
@@ -161,7 +169,6 @@
             }
         }
 
-        // Start initialization immediately
         initMap();
     </script>
 </body>
