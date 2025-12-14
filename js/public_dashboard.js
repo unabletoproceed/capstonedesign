@@ -57,7 +57,8 @@ async function fetchData() {
         loadingDiv.style.display = 'block';
         tableElement.style.display = 'none';
 
-        // Fetch dari sensor_readings dan JOIN ke devices untuk ambil nama alat
+        console.log("Memulai Fetching Data..."); // DEBUG 1
+
         const { data, error } = await supabase
             .from('sensor_readings')
             .select(`
@@ -68,8 +69,11 @@ async function fetchData() {
                 devices ( name ) 
             `)
             .order('timestamp', { ascending: false })
-            .limit(2000); // Limit diperbesar sedikit
+            .limit(2000);
 
+        // DEBUG 2: Tampilkan hasil mentah di Console
+        console.log("Raw Data dari Supabase:", data);
+        console.log("Error dari Supabase:", error);
         if (error) throw error;
 
         // Flatten data structure (memindahkan nama device ke root object biar mudah)
