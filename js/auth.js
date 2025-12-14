@@ -37,20 +37,30 @@ loginForm.addEventListener('submit', async (e) => {
 
     } catch (err) {
         // 4. Jika Gagal (Tampilkan Error)
-        console.error('Login Error:', err.message);
+        console.error('Login Error Raw:', err); // Cek di Console Browser (F12)
         
-        // Tentukan pesan bahasa Indonesia yang ramah
         let message = "Terjadi kesalahan pada sistem.";
         
-        if (err.message.includes("Invalid login credentials")) {
-            message = "Login Gagal: Email atau Password salah.";
-        } else if (err.message.includes("Email not confirmed")) {
-            message = "Login Gagal: Email belum diverifikasi.";
+        // Cek isi pesan error asli dari Supabase
+        // Kadang errornya: "Invalid login credentials"
+        if (err.message && (err.message.includes("Invalid login credentials") || err.message.includes("invalid claim"))) {
+            message = "Email atau Password salah.";
+        } else if (err.message && err.message.includes("Email not confirmed")) {
+            message = "Email belum diverifikasi. Cek inbox Anda.";
+        } else {
+            // Jika error lain, tampilkan pesan aslinya agar kita tahu kenapa
+            message = "Error: " + err.message; 
         }
 
         // Tampilkan ke HTML
         errorMsgElement.textContent = message;
-        errorMsgElement.style.display = 'block';
+        errorMsgElement.style.display = 'block'; // Pastikan ini tereksekusi
+        
+        // Tambahkan border merah manual lewat JS untuk tes (jika CSS tidak jalan)
+        errorMsgElement.style.color = 'red';
+        errorMsgElement.style.border = '1px solid red';
+        errorMsgElement.style.padding = '10px';
+
     } finally {
         // 5. Kembalikan Tombol seperti semula
         loginBtn.disabled = false;
