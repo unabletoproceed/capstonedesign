@@ -100,7 +100,7 @@ addForm.addEventListener('submit', async (e) => {
 window.openEditDevice = (id) => {
     const dev = currentDevices.find(d => d.id === id);
     if (!dev) return;
-
+c 
     // Simpan ID Asli (Primary Key lama) untuk referensi "WHERE"
     document.getElementById('original-id').value = dev.id;
     

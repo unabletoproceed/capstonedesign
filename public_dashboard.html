@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="id"> <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Public Dashboard - SERABI</title>
@@ -16,11 +15,9 @@
             <a href="index.html" class="logo">SERABI</a>
             <ul class="nav-links">
                 <li><a href="index.html" data-i18n="nav_home">Beranda</a></li>
-                <li><a href="visualization.html" data-i18n="nav_learn">Pelajari Selengkapnya</a></li>
                 <li><a href="public_dashboard.html" class="active" data-i18n="nav_dash">Dashboard Publik</a></li>
-                <li><a href="visualization.html" data-i18n="nav_vis">Visualisasi</a></li>
+                <li><a href="public_map.html" data-i18n="nav_map">Peta Lokasi</a></li>
                 <li><a href="login.html" class="btn-login" data-i18n="nav_login">Login</a></li>
-                <li><button id="lang-toggle" class="lang-btn">EN</button></li>
             </ul>
         </div>
     </nav>
@@ -30,13 +27,20 @@
         <header class="hero-section" style="padding: 30px; margin-bottom: 20px;">
             <div class="hero-content">
                 <h1>Data Historis Sungai</h1>
-                <p>Akses terbuka data pemantauan debit dan kecepatan air.</p>
+                <p>Akses terbuka data pemantauan sensor radar.</p>
             </div>
         </header>
 
         <section class="controls-bar">
             <div class="control-group">
-                <label>Filter Tanggal:</label>
+                <label>Lokasi / Alat:</label>
+                <select id="deviceFilter">
+                    <option value="">Semua Lokasi</option>
+                    </select>
+            </div>
+
+            <div class="control-group">
+                <label>Tanggal:</label>
                 <input type="date" id="dateFilter">
             </div>
 
@@ -62,8 +66,8 @@
             <table id="dataTable" style="display:none;">
                 <thead>
                     <tr>
-                        <th>Waktu (Timestamp)</th>
-                        <th>Kecepatan (m/s)</th>
+                        <th>Waktu</th>
+                        <th>Lokasi (Alat)</th> <th>TMA (m)</th>      <th>Vel (m/s)</th>
                         <th>Debit (m³/s)</th>
                         <th>Status</th>
                     </tr>
@@ -83,17 +87,6 @@
 
     <footer class="main-footer">
         <div class="footer-container">
-            <div class="footer-col">
-                <h3 class="footer-brand">SERABI</h3>
-                <p class="footer-desc">Sistem Estimasi Debit Air Sungai Berbasis Radar.</p>
-            </div>
-            <div class="footer-col">
-                <h4>Navigasi</h4>
-                <ul class="footer-links">
-                    <li><a href="index.html">Beranda</a></li>
-                    <li><a href="public_dashboard.html">Dashboard Publik</a></li>
-                </ul>
-            </div>
             <div class="footer-bottom">
                 <p>&copy; 2025 River Monitoring System.</p>
             </div>

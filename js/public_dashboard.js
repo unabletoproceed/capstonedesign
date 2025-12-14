@@ -2,8 +2,8 @@
 import { supabase } from './supabase.js';
 
 // State Variables
-let allData = [];       // Stores the raw data from DB
-let filteredData = [];  // Stores data after Search/Date filter
+let allData = [];       // Menyimpan data mentah dari DB
+let filteredData = [];  // Menyimpan data setelah difilter
 let currentPage = 1;
 let rowsPerPage = 10;
 
@@ -14,23 +14,71 @@ const tableElement = document.getElementById('dataTable');
 const pageInfo = document.getElementById('pageInfo');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
+const deviceFilter = document.getElementById('deviceFilter'); // Elemen Filter Baru
 
 // ==========================================
-// 1. FETCH DATA
+// 0. INIT (Load Devices dulu, baru Data)
 // ==========================================
-async function fetchData() {
+async function init() {
+    await fetchDevices();
+    await fetchData();
+}
+
+// ==========================================
+// 1. FETCH DEVICES (Untuk Dropdown Filter)
+// ==========================================
+async function fetchDevices() {
     try {
-        // Fetch last 1000 records (for performance, we limit the initial fetch)
         const { data, error } = await supabase
-            .from('sim_data')
-            .select('*')
-            .order('timestamp', { ascending: false })
-            .limit(1000);
+            .from('devices')
+            .select('id, name')
+            .order('name');
 
         if (error) throw error;
 
-        allData = data;
-        filteredData = data; // Initially, filtered is same as all
+        // Isi Dropdown
+        data.forEach(dev => {
+            const option = document.createElement('option');
+            option.value = dev.name; // Kita filter berdasarkan nama agar mudah di search box juga
+            option.textContent = dev.name;
+            deviceFilter.appendChild(option);
+        });
+
+    } catch (err) {
+        console.error("Gagal load devices:", err);
+    }
+}
+
+// ==========================================
+// 2. FETCH DATA SENSOR
+// ==========================================
+async function fetchData() {
+    try {
+        loadingDiv.style.display = 'block';
+        tableElement.style.display = 'none';
+
+        // Fetch dari sensor_readings dan JOIN ke devices untuk ambil nama alat
+        const { data, error } = await supabase
+            .from('sensor_readings')
+            .select(`
+                timestamp,
+                velocity,
+                discharge,
+                water_level,
+                devices ( name ) 
+            `)
+            .order('timestamp', { ascending: false })
+            .limit(2000); // Limit diperbesar sedikit
+
+        if (error) throw error;
+
+        // Flatten data structure (memindahkan nama device ke root object biar mudah)
+        allData = data.map(row => ({
+            ...row,
+            device_name: row.devices ? row.devices.name : 'Unknown Device'
+        }));
+
+        filteredData = allData; 
         
         renderTable();
         loadingDiv.style.display = 'none';
@@ -43,7 +91,7 @@ async function fetchData() {
 }
 
 // ==========================================
-// 2. RENDER TABLE
+// 3. RENDER TABLE
 // ==========================================
 function renderTable() {
     tableBody.innerHTML = '';
@@ -54,7 +102,7 @@ function renderTable() {
     const paginatedData = filteredData.slice(start, end);
 
     if (paginatedData.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center">Tidak ada data ditemukan</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center">Tidak ada data ditemukan</td></tr>';
         return;
     }
 
@@ -63,20 +111,30 @@ function renderTable() {
         
         // Format Date
         const dateObj = new Date(row.timestamp);
-        const dateStr = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString();
+        const dateStr = dateObj.toLocaleDateString('id-ID') + ' ' + dateObj.toLocaleTimeString('id-ID');
 
-        // Determine Status Logic (Example: Alert if Discharge > 10)
-        let statusBadge = '<span class="badge badge-normal">Normal</span>';
-        if (row.discharge > 10 && row.discharge <= 15) {
-            statusBadge = '<span class="badge badge-warning">Siaga</span>';
-        } else if (row.discharge > 15) {
-            statusBadge = '<span class="badge badge-danger">Bahaya</span>';
+        // Handle Null Values
+        const velocity = row.velocity !== null ? row.velocity.toFixed(2) : '-';
+        const discharge = row.discharge !== null ? row.discharge.toFixed(2) : '-';
+        const waterLevel = row.water_level !== null ? row.water_level.toFixed(2) : '-';
+
+        // Logic Status (Contoh: Berdasarkan Water Level atau Discharge)
+        // Sesuaikan logika ini dengan kebutuhan lapangan Anda
+        let statusBadge = '<span class="badge badge-normal" style="background:#2dce89; color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem;">Aman</span>';
+        
+        // Contoh Logika Status (Ganti angka ini sesuai kebutuhan)
+        if (row.discharge > 20) {
+            statusBadge = '<span class="badge badge-danger" style="background:#f5365c; color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem;">Bahaya</span>';
+        } else if (row.discharge > 10) {
+            statusBadge = '<span class="badge badge-warning" style="background:#fb6340; color:white; padding:4px 8px; border-radius:4px; font-size:0.8rem;">Siaga</span>';
         }
 
         tr.innerHTML = `
             <td>${dateStr}</td>
-            <td><strong>${row.velocity}</strong></td>
-            <td>${row.discharge}</td>
+            <td><strong>${row.device_name}</strong></td>
+            <td>${waterLevel}</td>
+            <td>${velocity}</td>
+            <td>${discharge}</td>
             <td>${statusBadge}</td>
         `;
         tableBody.appendChild(tr);
@@ -86,32 +144,38 @@ function renderTable() {
 }
 
 // ==========================================
-// 3. CONTROLS & FILTERS
+// 4. CONTROLS & FILTERS
 // ==========================================
 
-// Search Filter
-document.getElementById('searchInput').addEventListener('input', (e) => {
-    const term = e.target.value.toLowerCase();
-    filteredData = allData.filter(row => {
-        // Search in date or values
-        return row.timestamp.toLowerCase().includes(term) || 
-               row.velocity.toString().includes(term);
-    });
-    currentPage = 1; // Reset to page 1
-    renderTable();
-});
+// Fungsi Filter Utama (Menggabungkan semua filter)
+function applyFilters() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const dateVal = document.getElementById('dateFilter').value;
+    const deviceVal = document.getElementById('deviceFilter').value;
 
-// Date Filter
-document.getElementById('dateFilter').addEventListener('change', (e) => {
-    const selectedDate = e.target.value; // YYYY-MM-DD
-    if (!selectedDate) {
-        filteredData = allData; // Reset if empty
-    } else {
-        filteredData = allData.filter(row => row.timestamp.startsWith(selectedDate));
-    }
-    currentPage = 1;
+    filteredData = allData.filter(row => {
+        // 1. Filter Search (Text)
+        const matchesSearch = 
+            row.timestamp.toLowerCase().includes(searchTerm) || 
+            row.device_name.toLowerCase().includes(searchTerm);
+
+        // 2. Filter Tanggal
+        const matchesDate = dateVal ? row.timestamp.startsWith(dateVal) : true;
+
+        // 3. Filter Device Dropdown
+        const matchesDevice = deviceVal ? row.device_name === deviceVal : true;
+
+        return matchesSearch && matchesDate && matchesDevice;
+    });
+
+    currentPage = 1; // Reset ke halaman 1 setiap filter berubah
     renderTable();
-});
+}
+
+// Event Listeners untuk Filter
+document.getElementById('searchInput').addEventListener('input', applyFilters);
+document.getElementById('dateFilter').addEventListener('change', applyFilters);
+document.getElementById('deviceFilter').addEventListener('change', applyFilters);
 
 // Rows Per Page
 document.getElementById('rowsPerPage').addEventListener('change', (e) => {
@@ -121,7 +185,7 @@ document.getElementById('rowsPerPage').addEventListener('change', (e) => {
 });
 
 // ==========================================
-// 4. PAGINATION
+// 5. PAGINATION
 // ==========================================
 window.changePage = (direction) => {
     const totalPages = Math.ceil(filteredData.length / rowsPerPage);
@@ -142,7 +206,7 @@ function updatePaginationControls() {
 }
 
 // ==========================================
-// 5. CSV DOWNLOAD
+// 6. CSV DOWNLOAD
 // ==========================================
 window.downloadCSV = () => {
     if (filteredData.length === 0) {
@@ -150,10 +214,13 @@ window.downloadCSV = () => {
         return;
     }
 
-    let csv = 'Timestamp,Velocity (m/s),Discharge (m3/s)\n';
+    // Header CSV
+    let csv = 'Timestamp,Device Name,Water Level (m),Velocity (m/s),Discharge (m3/s)\n';
     
     filteredData.forEach(row => {
-        csv += `${row.timestamp},${row.velocity},${row.discharge}\n`;
+        // Handle comma in timestamp or name to prevent CSV break
+        const cleanName = row.device_name.replace(/,/g, ''); 
+        csv += `${row.timestamp},${cleanName},${row.water_level},${row.velocity},${row.discharge}\n`;
     });
 
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -161,11 +228,11 @@ window.downloadCSV = () => {
     const a = document.createElement('a');
     a.setAttribute('hidden', '');
     a.setAttribute('href', url);
-    a.setAttribute('download', 'river_data_export.csv');
+    a.setAttribute('download', `serabi_export_${new Date().toISOString().slice(0,10)}.csv`);
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
 };
 
-// Initialize
-fetchData();
+// Start App
+init();

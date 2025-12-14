@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <meta name="description" content="Peta persebaran sensor banjir SERABI. Pantau debit air dan status siaga banjir secara real-time di lokasi Anda.">
+    <meta name="description" content="Peta interaktif persebaran sensor banjir SERABI. Pantau status siaga, debit air, dan lokasi rawan banjir secara real-time.">
     <meta name="theme-color" content="#0A3D52">
     <title>Peta Persebaran Sensor - SERABI</title>
     
@@ -13,13 +13,14 @@
     <link rel="preconnect" href="https://c.basemaps.cartocdn.com" crossorigin>
     <link rel="preconnect" href="https://d.basemaps.cartocdn.com" crossorigin>
     <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 
     <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-        /* Variabel Warna */
+        /* Variabel Warna Utama */
         :root { 
             --deep-ocean: #0A3D52; 
             --water-dark: #006064; 
@@ -28,7 +29,7 @@
         /* Reset & Layout */
         body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f0f0; }
         
-        /* Map Container (Background abu-abu agar loading tile tidak terlalu kontras) */
+        /* Map Container */
         #map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; background: #e3e3e3; }
 
         /* Navbar */
@@ -59,7 +60,7 @@
 
         @keyframes slideDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
-        /* SVG Icons */
+        /* SVG Icons Helper */
         .svg-icon { width: 1em; height: 1em; vertical-align: -0.125em; fill: currentColor; display: inline-block; }
 
         /* Popup Styles */
@@ -102,11 +103,11 @@
     <script type="module">
         import { supabase } from './js/supabase.js';
 
-        // Icon Pin SVG (Minimalis & Ringan)
+        // Icon Pin SVG (Sangat ringan, tidak perlu download font/gambar)
         const pinIconSVG = `<svg class="svg-icon" viewBox="0 0 384 512" style="width:14px;height:14px"><path d="M172.268 501.67C26.97 291.031 0 269.413 0 192 0 85.961 85.961 0 192 0s192 85.961 192 192c0 77.413-26.97 99.031-172.268 309.67-9.535 13.774-29.93 13.773-39.464 0zM192 272c44.183 0 80-35.817 80-80s-35.817-80-80-80-80 35.817-80 80 35.817 80 80 80z"/></svg>`;
 
         function initMap() {
-            // Tunggu Leaflet siap
+            // Mekanisme Retry: Tunggu Leaflet siap karena script di-defer
             if (typeof L === 'undefined') {
                 setTimeout(initMap, 50);
                 return;
@@ -120,8 +121,7 @@
 
             L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-            // Menggunakan CartoDB Voyager (Gratis, Cepat, PNG)
-            // 'crossOrigin: true' membantu browser caching
+            // Menggunakan CartoDB Voyager (Sangat Cepat & Ringan)
             L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap &copy; CARTO',
                 subdomains: 'abcd',
@@ -134,7 +134,7 @@
 
         async function loadDevices(map) {
             try {
-                // Ambil kolom yang diperlukan saja (Optimasi JSON size)
+                // Optimasi: Hanya ambil kolom yang dibutuhkan
                 const { data: devices, error } = await supabase
                     .from('devices')
                     .select('id, name, status, location_lat, location_lng');
