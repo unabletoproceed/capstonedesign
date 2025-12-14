@@ -932,26 +932,30 @@ input:checked + .slider:before { transform: translateX(26px); }
 
 /* Error Message */
 .error-msg {
-    display: none; /* Sembunyi default */
-    background-color: #ffebee; /* Merah muda lembut */
-    color: #c62828; /* Merah tua untuk teks */
-    border: 1px solid #ef9a9a; /* Garis tepi merah */
+    display: none; /* Default sembunyi */
+    width: 100%;
     padding: 12px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-    margin-top: 10px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    
+    background-color: #fee2e2; /* Merah muda terang */
+    border: 1px solid #ef4444; /* Merah menyala */
+    color: #b91c1c; /* Merah gelap */
+    
+    border-radius: 8px;
     font-size: 0.9rem;
-    text-align: center;
     font-weight: 600;
+    text-align: center;
+    
+    /* Animasi agar user sadar */
+    animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
 }
 
-/* Animasi getar agar user sadar ada error */
 @keyframes shake {
-    0% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    50% { transform: translateX(5px); }
-    75% { transform: translateX(-5px); }
-    100% { transform: translateX(0); }
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
 /* Style tambahan saat loading button */
