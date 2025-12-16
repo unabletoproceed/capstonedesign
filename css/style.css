@@ -1208,5 +1208,9 @@ input:checked + .slider:before { transform: translateX(26px); }
     pointer-events: none; /* Agar bisa klik tombol di belakangnya */
 }
 
-/* Pastikan style .water, .wave, .loading-text dari loading.css dipindahkan ke sini juga */
-/* ... (Copy paste CSS gelombang air kamu di sini) ... */
+.video-wrapper iframe {
+    width: 100%;
+    border-radius: 12px; /* Matches your design style */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    aspect-ratio: 16 / 9; /* Keeps the video standard rectangular shape */
+}
