@@ -97,11 +97,43 @@
 
         <section class="stats-grid">
             <div class="card status-card">
-                <h3 data-i18n="status_title">Status Terkini</h3>
-                <div id="latest-status" class="status-value" data-i18n="status_loading">Memuat data...</div>
-                <div class="status-indicator"><span class="dot"></span> Live</div>
-            </div>
+                <div class="card-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 data-i18n="status_title" style="margin: 0;">Status Terkini</h3>
             
+                    <select id="deviceSelect" class="device-selector">
+                        <option value="4" selected>Device 4 (Lokasi Utama)</option>
+                        <option value="1">Device 1</option>
+                        <option value="2">Device 2</option>
+                        </select>
+                </div>
+
+                <div id="latest-status" class="status-grid-display">
+                    <div class="stat-item">
+                        <span class="stat-label">Level Air</span>
+                        <span class="stat-value" id="val-water-level">-</span>
+                        <span class="stat-unit">m</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Kecepatan</span>
+                        <span class="stat-value" id="val-velocity">-</span>
+                        <span class="stat-unit">m/s</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Debit</span>
+                        <span class="stat-value" id="val-discharge">-</span>
+                        <span class="stat-unit">m³/s</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px; font-size: 0.85rem; color: #666;">
+                    Terakhir update: <span id="val-timestamp">-</span>
+                </div>
+        
+                <div class="status-indicator" style="margin-top: 10px;">
+                    <span class="dot"></span> Live
+                </div>
+            </div>
+    
             <div class="card map-card">
                 <h3 data-i18n="map_title">Lokasi Sungai</h3>
                 <div id="map" style="height: 400px; width: 100%; z-index: 1; position: relative;"></div>

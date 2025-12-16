@@ -1214,3 +1214,47 @@ input:checked + .slider:before { transform: translateX(26px); }
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     aspect-ratio: 16 / 9; /* Keeps the video standard rectangular shape */
 }
+
+/* Styling untuk Dropdown Device */
+.device-selector {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 0.9rem;
+    background-color: #f8f9fa;
+    cursor: pointer;
+}
+
+/* Grid untuk menampilkan 3 data berdampingan */
+.status-grid-display {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.stat-item {
+    background: #eef2f5;
+    padding: 10px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.stat-unit {
+    font-size: 0.7rem;
+    color: #888;
+}
