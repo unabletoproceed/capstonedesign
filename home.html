@@ -15,29 +15,28 @@
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
 
     <style>
-        /* Reset Dasar */
+        /* Reset & Layout */
         :root { --deep-ocean: #0A3D52; --water-dark: #006064; --white: #ffffff; --bg-page: #f8f9fe; }
         body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background-color: var(--bg-page); color: var(--deep-ocean); }
         
-        /* Navbar Critical */
+        /* Navbar */
         .navbar { background: var(--white); height: 70px; display: flex; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; padding: 0 20px; }
         .nav-container { width: 100%; max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 1.5rem; font-weight: 800; color: var(--deep-ocean); text-decoration: none; }
         .nav-links { list-style: none; display: flex; gap: 20px; padding: 0; margin: 0; }
-        
-        /* Hero Section Critical */
+        .nav-links a { text-decoration: none; color: #555; font-weight: 600; font-size: 0.9rem; }
+        .nav-links a.active { color: var(--water-dark); }
+
+        /* Hero */
         .dashboard-container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
         .hero-section { background: linear-gradient(87deg, var(--deep-ocean) 0%, var(--water-dark) 100%); border-radius: 1rem; padding: 3rem 2rem; color: var(--white); text-align: center; margin-bottom: 30px; }
         .hero-section h1 { margin: 0 0 10px 0; font-size: 2rem; }
         
-        /* Dashboard Controls */
+        /* Controls & Video */
         .dashboard-controls { text-align: center; margin: 20px 0; padding: 15px; background: #fff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #eee; }
         .dashboard-controls select { padding: 10px 15px; border-radius: 6px; border: 1px solid #ccc; font-size: 1rem; color: #0A3D52; font-weight: bold; min-width: 250px; cursor: pointer; }
-
-        /* Video Wrapper (Mencegah Layout Shift) */
         .video-wrapper iframe { width: 100%; aspect-ratio: 16/9; border-radius: 12px; background: #000; }
         
-        /* Responsive */
         @media (max-width: 768px) { .nav-links { display: none; } }
     </style>
 
@@ -45,9 +44,10 @@
     <noscript><link rel="stylesheet" href="css/style.css"></noscript>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="js/lang.js" defer></script>
 </head>
 <body>
@@ -77,7 +77,6 @@
 
         <section class="system-section">
             <h2 class="section-title" data-i18n="system_title">Cara Kerja Sistem</h2>
-    
             <div class="system-container">
                 <div class="video-wrapper">
                     
@@ -99,22 +98,22 @@
                     <div class="step-item">
                         <div class="step-number">1</div>
                         <div class="step-content">
-                            <h4>Radar Sensing (uRAD)</h4>
-                            <p>Gelombang 24GHz dipancarkan ke permukaan air. Pantulan sinyal diukur untuk mendapatkan <strong>Doppler Shift</strong>.</p>
+                            <h3>Radar Sensing (uRAD)</h3>
+                            <p>Gelombang 24GHz dipancarkan ke permukaan air. Sinyal pantulan ditangkap untuk mengukur <strong>Doppler Shift</strong>.</p>
                         </div>
                     </div>
                     <div class="step-item">
                         <div class="step-number">2</div>
                         <div class="step-content">
-                            <h4>Data Processing</h4>
+                            <h3>Data Processing</h3>
                             <p>Raspberry Pi memproses sinyal menggunakan algoritma FFT untuk memisahkan noise lingkungan.</p>
                         </div>
                     </div>
                     <div class="step-item">
                         <div class="step-number">3</div>
                         <div class="step-content">
-                            <h4>Real-time Dashboard</h4>
-                            <p>Data dikirim ke database Supabase dan divisualisasikan secara langsung pada website ini.</p>
+                            <h3>Real-time Dashboard</h3>
+                            <p>Data dikirim via HTTP Request ke database Supabase dan ditampilkan secara Real-Time.</p>
                         </div>
                     </div>
                 </div>
@@ -255,11 +254,13 @@
 
         let map, marker, velChart, disChart, currentDeviceId;
 
-        // Tunggu semua script defer selesai load
+        // Tunggu dokumen siap
         document.addEventListener('DOMContentLoaded', () => {
+            // Kita tunggu library berat (Leaflet & Chart) yg di-defer
             const checkLibs = setInterval(() => {
                 if (typeof L !== 'undefined' && typeof Chart !== 'undefined') {
                     clearInterval(checkLibs);
+                    console.log("Libraries Loaded. Init Dashboard...");
                     initVisuals();
                     loadDevices();
                 }
@@ -280,7 +281,7 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
-                scales: { x: { display: false } }, // Sembunyikan label X agar rapi di mobile
+                scales: { x: { display: false } }, 
                 elements: { point: { radius: 2 } }
             };
 
@@ -325,7 +326,10 @@
                 updateMap(data[0].location_lat, data[0].location_lng, data[0].name);
                 loadReadings(currentDeviceId);
 
-            } catch (err) { console.error(err); }
+            } catch (err) { 
+                console.error("Gagal load devices:", err);
+                select.innerHTML = '<option>Gagal memuat list alat</option>';
+            }
         }
 
         // 3. Load Data Sensor
@@ -342,8 +346,9 @@
                 updateCharts(data.reverse()); // Grafik butuh urutan lama -> baru
 
             } catch (err) {
-                console.error(err);
-                document.getElementById('conn-status').textContent = "Error Koneksi";
+                console.error("Gagal load readings:", err);
+                document.getElementById('latest-status').textContent = "Error";
+                document.getElementById('conn-status').textContent = "Offline/Error";
                 document.getElementById('conn-status').style.color = "red";
             }
         }
@@ -401,8 +406,10 @@
         document.getElementById('deviceSelect').addEventListener('change', (e) => {
             const opt = e.target.options[e.target.selectedIndex];
             currentDeviceId = e.target.value;
-            updateMap(opt.dataset.lat, opt.dataset.lng, opt.text);
-            loadReadings(currentDeviceId);
+            if(currentDeviceId) {
+                updateMap(opt.dataset.lat, opt.dataset.lng, opt.text);
+                loadReadings(currentDeviceId);
+            }
         });
 
         // Auto Refresh 10 Detik
