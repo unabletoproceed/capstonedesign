@@ -3,23 +3,44 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>River Monitoring System</title>
+    <title>River Monitoring System - Dashboard</title>
 
     <link rel="stylesheet" href="css/style.css" />
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <script src="js/lang.js"></script>
+
+    <style>
+        /* Style Tambahan untuk Dropdown Dashboard */
+        .dashboard-controls {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .dashboard-controls select {
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+            color: #0A3D52;
+            font-weight: bold;
+            min-width: 250px;
+        }
+    </style>
 </head>
 <body>
 
     <nav class="navbar">
         <div class="nav-container">
             <a href="index.html" class="logo">SERABI</a>
-            
             <ul class="nav-links">
                 <li><a href="index.html" class="active" data-i18n="nav_home">Beranda</a></li>
                 <li><a href="learn_more.html" data-i18n="nav_learn">Pelajari Selengkapnya</a></li>
@@ -30,6 +51,7 @@
             </ul>
         </div>
     </nav>
+
     <div class="dashboard-container">
         
         <header class="hero-section">
@@ -44,7 +66,7 @@
     
             <div class="system-container">
                 <div class="video-wrapper">
-                   <iframe 
+                    <iframe 
                         width="100%" 
                         height="315" 
                         src="https://www.youtube.com/embed/kVnZWZr9LPc" 
@@ -53,7 +75,7 @@
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
                         allowfullscreen>
                     </iframe>
-                    <p class="video-caption">Demo Alat Kami</p>
+                    <p class="video-caption">Demo: Simulasi Deteksi Radar di Lab</p>
                 </div>
 
                 <div class="steps-wrapper">
@@ -95,45 +117,26 @@
 
         <h2 class="section-title" style="margin-top: 40px;">Dasbor Langsung</h2>
 
+        <div class="dashboard-controls">
+            <label for="deviceSelect">Pilih Lokasi Pemantauan: </label>
+            <select id="deviceSelect">
+                <option value="">Memuat lokasi...</option>
+            </select>
+        </div>
+
         <section class="stats-grid">
             <div class="card status-card">
-                <div class="card-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3 data-i18n="status_title" style="margin: 0;">Status Terkini</h3>
-            
-                    <select id="deviceSelect" class="device-selector">
-                        <option value="4" selected>Device 4 (Lokasi Utama)</option>
-                        <option value="1">Device 1</option>
-                        <option value="2">Device 2</option>
-                        </select>
+                <h3 data-i18n="status_title">Status Terkini</h3>
+                <div id="latest-status" class="status-value" style="font-size: 1.2rem;">Menunggu Data...</div>
+                <div class="status-indicator" id="status-indicator">
+                    <span class="dot"></span> <span id="conn-status">Offline</span>
                 </div>
-
-                <div id="latest-status" class="status-grid-display">
-                    <div class="stat-item">
-                        <span class="stat-label">Level Air</span>
-                        <span class="stat-value" id="val-water-level">-</span>
-                        <span class="stat-unit">m</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Kecepatan</span>
-                        <span class="stat-value" id="val-velocity">-</span>
-                        <span class="stat-unit">m/s</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Debit</span>
-                        <span class="stat-value" id="val-discharge">-</span>
-                        <span class="stat-unit">m³/s</span>
-                    </div>
-                </div>
-
-                <div style="margin-top: 15px; font-size: 0.85rem; color: #666;">
-                    Terakhir update: <span id="val-timestamp">-</span>
-                </div>
-        
-                <div class="status-indicator" style="margin-top: 10px;">
-                    <span class="dot"></span> Live
+                <div style="margin-top:10px; font-size:0.9rem; color:#666;">
+                    Debit: <strong id="val-discharge">-</strong> m³/s <br>
+                    Kecepatan: <strong id="val-velocity">-</strong> m/s
                 </div>
             </div>
-    
+            
             <div class="card map-card">
                 <h3 data-i18n="map_title">Lokasi Sungai</h3>
                 <div id="map" style="height: 400px; width: 100%; z-index: 1; position: relative;"></div>
@@ -142,13 +145,13 @@
 
         <section class="charts-grid">
             <div class="card chart-card">
-                <h3 data-i18n="chart_vel_title">Grafik Kecepatan (1 Jam Terakhir)</h3>
+                <h3 data-i18n="chart_vel_title">Grafik Kecepatan (Terakhir)</h3>
                 <div class="chart-container">
                     <canvas id="velocityChart"></canvas>
                 </div>
             </div>
             <div class="card chart-card">
-                <h3 data-i18n="chart_dis_title">Grafik Debit (1 Jam Terakhir)</h3>
+                <h3 data-i18n="chart_dis_title">Grafik Debit (Terakhir)</h3>
                 <div class="chart-container">
                     <canvas id="dischargeChart"></canvas>
                 </div>
@@ -212,7 +215,6 @@
 
     <footer class="main-footer">
         <div class="footer-container">
-        
             <div class="footer-col">
                 <h3 class="footer-brand">SERABI</h3>
                 <p class="footer-desc">
@@ -249,9 +251,201 @@
         </div>
     </footer>
 
-    <script type="module" src="js/main.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module">
+        import { supabase } from './js/supabase.js';
 
-    <script type="module" src="js/main.js"></script>
+        // --- Variabel Global ---
+        let map;
+        let marker;
+        let velChart, disChart;
+        let currentDeviceId = null;
+
+        // --- 1. Inisialisasi Peta & Grafik ---
+        function initVisuals() {
+            // Init Map (Default ke Bandung)
+            map = L.map('map').setView([-6.97, 107.63], 13);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Init Chart Kecepatan
+            const ctxVel = document.getElementById('velocityChart').getContext('2d');
+            velChart = new Chart(ctxVel, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'Kecepatan (m/s)', data: [], borderColor: '#3498db', backgroundColor: 'rgba(52, 152, 219, 0.2)', fill: true, tension: 0.4 }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // Init Chart Debit
+            const ctxDis = document.getElementById('dischargeChart').getContext('2d');
+            disChart = new Chart(ctxDis, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'Debit (m³/s)', data: [], borderColor: '#2dce89', backgroundColor: 'rgba(45, 206, 137, 0.2)', fill: true, tension: 0.4 }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        // --- 2. Load Daftar Alat (Devices) untuk Dropdown ---
+        async function loadDevices() {
+            const select = document.getElementById('deviceSelect');
+            try {
+                const { data: devices, error } = await supabase.from('devices').select('id, name, location_lat, location_lng');
+                
+                if (error) throw error;
+
+                select.innerHTML = ''; // Reset options
+                
+                if (devices.length === 0) {
+                    select.innerHTML = '<option value="">Tidak ada alat aktif</option>';
+                    return;
+                }
+
+                devices.forEach((dev, index) => {
+                    const option = document.createElement('option');
+                    option.value = dev.id;
+                    option.textContent = dev.name;
+                    // Simpan koordinat di atribut data untuk akses cepat
+                    option.dataset.lat = dev.location_lat;
+                    option.dataset.lng = dev.location_lng;
+                    select.appendChild(option);
+                });
+
+                // Pilih alat pertama secara default
+                currentDeviceId = devices[0].id;
+                updateMapPosition(devices[0].location_lat, devices[0].location_lng, devices[0].name);
+                loadSensorData(currentDeviceId);
+
+            } catch (err) {
+                console.error("Gagal load devices:", err);
+                select.innerHTML = '<option value="">Error memuat data</option>';
+            }
+        }
+
+        // --- 3. Load Data Sensor Berdasarkan ID ---
+        async function loadSensorData(deviceId) {
+            try {
+                document.getElementById('latest-status').textContent = "Memuat...";
+                
+                // Ambil 20 data terakhir
+                const { data, error } = await supabase
+                    .from('sensor_readings')
+                    .select('*')
+                    .eq('device_id', deviceId)
+                    .order('timestamp', { ascending: false })
+                    .limit(20);
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    updateDashboardEmpty();
+                    return;
+                }
+
+                // Data Terbaru (Index 0)
+                const latest = data[0];
+                updateStatusCard(latest);
+
+                // Data Grafik (Perlu di-reverse agar urut waktu dari kiri ke kanan)
+                const history = data.reverse();
+                updateCharts(history);
+
+            } catch (err) {
+                console.error("Gagal load sensor:", err);
+                document.getElementById('latest-status').textContent = "Error Koneksi";
+            }
+        }
+
+        // --- Helper: Update Tampilan Status ---
+        function updateStatusCard(data) {
+            const time = new Date(data.timestamp).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+            const date = new Date(data.timestamp).toLocaleDateString('id-ID');
+            
+            // Update Angka
+            document.getElementById('val-discharge').textContent = data.discharge ? data.discharge.toFixed(2) : '-';
+            document.getElementById('val-velocity').textContent = data.velocity ? data.velocity.toFixed(2) : '-';
+
+            // Logic Status Sederhana
+            const statusEl = document.getElementById('latest-status');
+            const indicatorEl = document.getElementById('status-indicator');
+            const connEl = document.getElementById('conn-status');
+
+            if (data.discharge > 20) {
+                statusEl.textContent = `BAHAYA (${data.discharge.toFixed(1)} m³/s)`;
+                statusEl.style.color = "#f5365c";
+            } else if (data.discharge > 10) {
+                statusEl.textContent = `SIAGA (${data.discharge.toFixed(1)} m³/s)`;
+                statusEl.style.color = "#fb6340";
+            } else {
+                statusEl.textContent = "AMAN TERKENDALI";
+                statusEl.style.color = "#2dce89";
+            }
+
+            connEl.textContent = `Update: ${time} ${date}`;
+            indicatorEl.style.color = "#2dce89"; // Hijau (Online)
+        }
+
+        function updateDashboardEmpty() {
+            document.getElementById('latest-status').textContent = "Tidak Ada Data";
+            document.getElementById('latest-status').style.color = "#888";
+            document.getElementById('val-discharge').textContent = "-";
+            document.getElementById('val-velocity').textContent = "-";
+            
+            // Kosongkan Grafik
+            velChart.data.labels = []; velChart.data.datasets[0].data = []; velChart.update();
+            disChart.data.labels = []; disChart.data.datasets[0].data = []; disChart.update();
+        }
+
+        // --- Helper: Update Grafik ---
+        function updateCharts(history) {
+            const labels = history.map(d => new Date(d.timestamp).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}));
+            const velData = history.map(d => d.velocity);
+            const disData = history.map(d => d.discharge);
+
+            velChart.data.labels = labels;
+            velChart.data.datasets[0].data = velData;
+            velChart.update();
+
+            disChart.data.labels = labels;
+            disChart.data.datasets[0].data = disData;
+            disChart.update();
+        }
+
+        // --- Helper: Update Peta ---
+        function updateMapPosition(lat, lng, name) {
+            if (marker) map.removeLayer(marker);
+            marker = L.marker([lat, lng]).addTo(map)
+                .bindPopup(`<b>${name}</b><br>Lat: ${lat}<br>Lng: ${lng}`).openPopup();
+            map.setView([lat, lng], 15);
+        }
+
+        // --- Event Listener Dropdown ---
+        document.getElementById('deviceSelect').addEventListener('change', (e) => {
+            const selectedOption = e.target.options[e.target.selectedIndex];
+            currentDeviceId = e.target.value;
+            
+            if (currentDeviceId) {
+                const lat = selectedOption.dataset.lat;
+                const lng = selectedOption.dataset.lng;
+                const name = selectedOption.text;
+                
+                updateMapPosition(lat, lng, name);
+                loadSensorData(currentDeviceId);
+            }
+        });
+
+        // --- Auto Refresh Data (Setiap 10 Detik) ---
+        setInterval(() => {
+            if (currentDeviceId) loadSensorData(currentDeviceId);
+        }, 10000);
+
+        // --- Jalankan Saat Halaman Siap ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initVisuals();
+            loadDevices();
+        });
+
+    </script>
+
 </body>
 </html>
