@@ -38,7 +38,7 @@
         
         .video-wrapper iframe { width: 100%; aspect-ratio: 16/9; border-radius: 12px; background: #000; }
         
-        /* Fallback Avatar jika gambar 404 */
+        /* Fallback Avatar */
         .avatar { background-color: #eee; }
         .avatar img { object-fit: cover; width: 100%; height: 100%; }
 
@@ -47,7 +47,9 @@
 
     <link rel="preload" href="css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="css/style.css"></noscript>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    
+    <link rel="preload" href="https://unpkg.com/leaflet/dist/leaflet.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"></noscript>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
@@ -83,6 +85,7 @@
             <h2 class="section-title" data-i18n="system_title">Cara Kerja Sistem</h2>
             <div class="system-container">
                 <div class="video-wrapper">
+                    
                     <iframe 
                         width="560" height="315" 
                         src="https://www.youtube.com/embed/kVnZWZr9LPc"
@@ -151,11 +154,11 @@
         <h3 class="team-subtitle">Dosen Pembimbing</h3>
         <div class="team-grid supervisors">
             <div class="team-card">
-                <div class="avatar"><img src="assets/images/lecturer1.jpg" alt="Dosen 1" onerror="this.src='https://via.placeholder.com/100'"></div>
+                <div class="avatar"><img src="assets/images/lecturer1.jpg" alt="Prof. Aloysius" onerror="this.src='https://via.placeholder.com/100'"></div>
                 <h4>Prof. Dr. Aloysius Adya</h4><p>Pembimbing Utama</p>
             </div>
             <div class="team-card">
-                <div class="avatar"><img src="assets/images/lecturer2.jpg" alt="Dosen 2" onerror="this.src='https://via.placeholder.com/100'"></div>
+                <div class="avatar"><img src="assets/images/lecturer2.jpg" alt="Dr. Arif" onerror="this.src='https://via.placeholder.com/100'"></div>
                 <h4>Arif Abdul Aziz, Ph.D.</h4><p>Pembimbing Pendamping</p>
             </div>
         </div>
@@ -200,6 +203,7 @@
 
         let map, marker, velChart, disChart, currentDeviceId;
 
+        // Initialize when window loads
         window.addEventListener('load', async () => {
             console.log("System Check: Checking libraries...");
             
@@ -209,7 +213,7 @@
                 return;
             }
 
-            // Tunggu Library Chart/Leaflet (Retry Pattern)
+            // Retry until libraries load
             const checkLibs = setInterval(() => {
                 if (typeof L !== 'undefined' && typeof Chart !== 'undefined') {
                     clearInterval(checkLibs);
@@ -224,11 +228,11 @@
             loadDevices();
         }
 
-        // 1. Setup Visual
+        // 1. Setup Visual Elements
         function initVisuals() {
-            // FIX: Cek jika map sudah ada, jangan buat ulang (Mencegah Error "Map already initialized")
+            // Prevent map re-initialization
             if (map !== undefined) {
-                map.remove(); // Hapus map lama jika ada
+                map.remove();
             }
 
             const mapContainer = document.getElementById('map');
