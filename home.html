@@ -3,20 +3,36 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <meta name="description" content="Sistem monitoring banjir berbasis radar (SERABI). Pantau debit air sungai dan kecepatan arus secara real-time untuk mitigasi bencana.">
+    <meta name="theme-color" content="#0A3D52">
     <title>River Monitoring System - Dashboard</title>
 
-    <link rel="stylesheet" href="css/style.css" />
+    <link rel="preconnect" href="https://www.youtube.com">
+    <link rel="preconnect" href="https://i.ytimg.com">
+    <link rel="preconnect" href="https://unpkg.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://ohbpqbhphpdlqzdnvtov.supabase.co">
 
+    <link rel="preload" href="css/style.css" as="style">
+    <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <script src="js/lang.js"></script>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="js/lang.js" defer></script>
 
     <style>
-        /* Style Tambahan untuk Dropdown Dashboard */
+        /* CSS Tambahan untuk Lite YouTube Embed */
+        .video-wrapper iframe {
+            background-color: #000;
+            width: 100%;
+            height: 100%;
+            aspect-ratio: 16 / 9;
+            border-radius: 12px;
+        }
+        /* Style Dropdown Dashboard */
         .dashboard-controls {
             text-align: center;
             margin: 20px 0;
@@ -52,7 +68,7 @@
         </div>
     </nav>
 
-    <div class="dashboard-container">
+    <main class="dashboard-container">
         
         <header class="hero-section">
             <div class="hero-content">
@@ -66,14 +82,17 @@
     
             <div class="system-container">
                 <div class="video-wrapper">
+                    
                     <iframe 
-                        width="100%" 
+                        width="560" 
                         height="315" 
-                        src="https://www.youtube.com/embed/kVnZWZr9LPc" 
-                        title="YouTube video player" 
+                        src="https://www.youtube.com/embed/kVnZWZr9LPc"
+                        srcdoc="<style>*{padding:0;margin:0;overflow:hidden}html,body{height:100%}img,span{position:absolute;width:100%;top:0;bottom:0;margin:auto}span{height:1.5em;text-align:center;font:48px/1.5 sans-serif;color:white;text-shadow:0 0 0.5em black}</style><a href=https://www.youtube.com/embed/kVnZWZr9LPc?autoplay=1><img src=https://img.youtube.com/vi/kVnZWZr9LPc/hqdefault.jpg alt='Video Demo SERABI'><span>▶</span></a>"
+                        title="Demo Sistem SERABI"
                         frameborder="0" 
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                        allowfullscreen>
+                        allowfullscreen
+                        loading="lazy">
                     </iframe>
                     <p class="video-caption">Demo: Simulasi Deteksi Radar di Lab</p>
                 </div>
@@ -82,7 +101,7 @@
                     <div class="step-item">
                         <div class="step-number">1</div>
                         <div class="step-content">
-                            <h4>Radar Sensing (uRAD)</h4>
+                            <h3>Radar Sensing (uRAD)</h3>
                             <p>Gelombang 24GHz dipancarkan ke permukaan air. Sinyal pantulan ditangkap untuk mengukur <strong>Doppler Shift</strong>.</p>
                         </div>
                     </div>
@@ -90,7 +109,7 @@
                     <div class="step-item">
                         <div class="step-number">2</div>
                         <div class="step-content">
-                            <h4>Data Processing (Raspberry Pi)</h4>
+                            <h3>Data Processing (Raspberry Pi)</h3>
                             <p>Algoritma FFT (Fast Fourier Transform) memisahkan sinyal murni kecepatan air dari noise lingkungan.</p>
                         </div>
                     </div>
@@ -98,7 +117,7 @@
                     <div class="step-item">
                         <div class="step-number">3</div>
                         <div class="step-content">
-                            <h4>Visualization (Web Dashboard)</h4>
+                            <h3>Visualization (Web Dashboard)</h3>
                             <p>Data dikirim via HTTP Request ke database Supabase dan ditampilkan secara Real-Time.</p>
                         </div>
                     </div>
@@ -158,7 +177,7 @@
             </div>
         </section>
 
-    </div>
+    </main>
 
     <section class="team-section">
         <h2 class="section-title" data-i18n="team_title">Tim Pengembang</h2>
@@ -167,13 +186,14 @@
         <div class="team-grid supervisors">
             <div class="team-card">
                 <div class="avatar">
-                    <img src="assets/images/lecturer1.jpg" alt="Dosen 1"> </div>
+                    <img src="assets/images/lecturer1.jpg" alt="Dosen 1" loading="lazy" width="100" height="100"> 
+                </div>
                 <h4>Prof. Dr. Aloysius Adya Pramudita, S.T., M.T.</h4>
                 <p>Pembimbing Utama</p>
             </div>
             <div class="team-card">
                 <div class="avatar">
-                    <img src="assets/images/lecturer2.jpg" alt="Dosen 2">
+                    <img src="assets/images/lecturer2.jpg" alt="Dosen 2" loading="lazy" width="100" height="100">
                 </div>
                 <h4>Arif Abdul Aziz, S.Si., M.Sc., Ph.D. </h4>
                 <p>Pembimbing Pendamping</p>
@@ -184,28 +204,28 @@
         <div class="team-grid students">
             <div class="team-card">
                 <div class="avatar">
-                    <img src="assets/images/student1.jpg" alt="Student 1">
+                    <img src="assets/images/student1.jpg" alt="Student 1" loading="lazy" width="100" height="100">
                 </div>
                 <h4>Lutvi Adam Harahap</h4>
                 <p>Lead System Integrator</p>
             </div>
             <div class="team-card">
                 <div class="avatar">
-                    <img src="assets/images/student2.jpg" alt="Student 2">
+                    <img src="assets/images/student2.jpg" alt="Student 2" loading="lazy" width="100" height="100">
                 </div>
                 <h4>Indah Delita Permatasari</h4>
                 <p>System Verification Lead</p>
             </div>
             <div class="team-card">
                 <div class="avatar">
-                    <img src="assets/images/student3.jpg" alt="Student 3">
+                    <img src="assets/images/student3.jpg" alt="Student 3" loading="lazy" width="100" height="100">
                 </div>
                 <h4>Arnoldus Gratio Darryl Andyka</h4>
                 <p>Hardware Implementation Lead</p>
             </div>
             <div class="team-card">
                 <div class="avatar">
-                    <img src="assets/images/student4.jpg" alt="Student 4">
+                    <img src="assets/images/student4.jpg" alt="Student 4" loading="lazy" width="100" height="100">
                 </div>
                 <h4>Husna Firyal Az-Zahra</h4>
                 <p>Full Stack IoT Developer</p>
@@ -222,7 +242,7 @@
                     Proyek Akhir S1 Teknik Telekomunikasi.
                 </p>
                 <div class="uni-badge">
-                    <img src="assets/images/telkom-logo.png" alt="Telkom University" style="height: 40px;">
+                    <img src="assets/images/telkom-logo.png" alt="Telkom University" width="150" height="40" style="height: 40px; width: auto;">
                 </div>
             </div>
 
@@ -254,198 +274,136 @@
     <script type="module">
         import { supabase } from './js/supabase.js';
 
-        // --- Variabel Global ---
-        let map;
-        let marker;
-        let velChart, disChart;
-        let currentDeviceId = null;
+        let map, marker, velChart, disChart, currentDeviceId = null;
 
-        // --- 1. Inisialisasi Peta & Grafik ---
+        // Init saat DOM siap
+        document.addEventListener('DOMContentLoaded', () => {
+            // Cek apakah library sudah load (karena defer)
+            const checkLibs = setInterval(() => {
+                if (typeof L !== 'undefined' && typeof Chart !== 'undefined') {
+                    clearInterval(checkLibs);
+                    initVisuals();
+                    loadDevices();
+                }
+            }, 100);
+        });
+
         function initVisuals() {
-            // Init Map (Default ke Bandung)
-            map = L.map('map').setView([-6.97, 107.63], 13);
+            map = L.map('map', { zoomControl: false }).setView([-6.97, 107.63], 13);
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                attribution: '&copy; CARTO',
                 maxZoom: 19
             }).addTo(map);
 
-            // Init Chart Kecepatan
             const ctxVel = document.getElementById('velocityChart').getContext('2d');
             velChart = new Chart(ctxVel, {
                 type: 'line',
-                data: { labels: [], datasets: [{ label: 'Kecepatan (m/s)', data: [], borderColor: '#3498db', backgroundColor: 'rgba(52, 152, 219, 0.2)', fill: true, tension: 0.4 }] },
-                options: { responsive: true, maintainAspectRatio: false }
+                data: { labels: [], datasets: [{ label: 'Kecepatan (m/s)', data: [], borderColor: '#3498db', backgroundColor: 'rgba(52, 152, 219, 0.1)', fill: true, tension: 0.4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
 
-            // Init Chart Debit
             const ctxDis = document.getElementById('dischargeChart').getContext('2d');
             disChart = new Chart(ctxDis, {
                 type: 'line',
-                data: { labels: [], datasets: [{ label: 'Debit (m³/s)', data: [], borderColor: '#2dce89', backgroundColor: 'rgba(45, 206, 137, 0.2)', fill: true, tension: 0.4 }] },
-                options: { responsive: true, maintainAspectRatio: false }
+                data: { labels: [], datasets: [{ label: 'Debit (m³/s)', data: [], borderColor: '#2dce89', backgroundColor: 'rgba(45, 206, 137, 0.1)', fill: true, tension: 0.4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         }
 
-        // --- 2. Load Daftar Alat (Devices) untuk Dropdown ---
         async function loadDevices() {
             const select = document.getElementById('deviceSelect');
             try {
-                const { data: devices, error } = await supabase.from('devices').select('id, name, location_lat, location_lng');
-                
+                const { data, error } = await supabase.from('devices').select('id, name, location_lat, location_lng');
                 if (error) throw error;
-
-                select.innerHTML = ''; // Reset options
+                select.innerHTML = ''; 
                 
-                if (devices.length === 0) {
-                    select.innerHTML = '<option value="">Tidak ada alat aktif</option>';
-                    return;
-                }
+                if (!data.length) { select.innerHTML = '<option>Tidak ada alat</option>'; return; }
 
-                devices.forEach((dev, index) => {
-                    const option = document.createElement('option');
-                    option.value = dev.id;
-                    option.textContent = dev.name;
-                    // Simpan koordinat di atribut data untuk akses cepat
-                    option.dataset.lat = dev.location_lat;
-                    option.dataset.lng = dev.location_lng;
-                    select.appendChild(option);
+                data.forEach(dev => {
+                    const opt = document.createElement('option');
+                    opt.value = dev.id;
+                    opt.textContent = dev.name;
+                    opt.dataset.lat = dev.location_lat;
+                    opt.dataset.lng = dev.location_lng;
+                    select.appendChild(opt);
                 });
 
-                // Pilih alat pertama secara default
-                currentDeviceId = devices[0].id;
-                updateMapPosition(devices[0].location_lat, devices[0].location_lng, devices[0].name);
+                currentDeviceId = data[0].id;
+                updateMapPosition(data[0].location_lat, data[0].location_lng, data[0].name);
                 loadSensorData(currentDeviceId);
-
-            } catch (err) {
-                console.error("Gagal load devices:", err);
-                select.innerHTML = '<option value="">Error memuat data</option>';
-            }
+            } catch (err) { console.error(err); }
         }
 
-        // --- 3. Load Data Sensor Berdasarkan ID ---
         async function loadSensorData(deviceId) {
             try {
                 document.getElementById('latest-status').textContent = "Memuat...";
-                
-                // Ambil 20 data terakhir
-                const { data, error } = await supabase
-                    .from('sensor_readings')
-                    .select('*')
-                    .eq('device_id', deviceId)
-                    .order('timestamp', { ascending: false })
-                    .limit(20);
+                const { data, error } = await supabase.from('sensor_readings')
+                    .select('*').eq('device_id', deviceId).order('timestamp', { ascending: false }).limit(20);
 
                 if (error) throw error;
+                if (!data || !data.length) { updateDashboardEmpty(); return; }
 
-                if (!data || data.length === 0) {
-                    updateDashboardEmpty();
-                    return;
-                }
-
-                // Data Terbaru (Index 0)
-                const latest = data[0];
-                updateStatusCard(latest);
-
-                // Data Grafik (Perlu di-reverse agar urut waktu dari kiri ke kanan)
-                const history = data.reverse();
-                updateCharts(history);
-
+                updateStatusCard(data[0]);
+                updateCharts(data.reverse());
             } catch (err) {
-                console.error("Gagal load sensor:", err);
-                document.getElementById('latest-status').textContent = "Error Koneksi";
+                document.getElementById('latest-status').textContent = "Offline";
             }
         }
 
-        // --- Helper: Update Tampilan Status ---
         function updateStatusCard(data) {
-            const time = new Date(data.timestamp).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
-            const date = new Date(data.timestamp).toLocaleDateString('id-ID');
+            const time = new Date(data.timestamp).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+            document.getElementById('val-discharge').textContent = data.discharge?.toFixed(2) || '-';
+            document.getElementById('val-velocity').textContent = data.velocity?.toFixed(2) || '-';
             
-            // Update Angka
-            document.getElementById('val-discharge').textContent = data.discharge ? data.discharge.toFixed(2) : '-';
-            document.getElementById('val-velocity').textContent = data.velocity ? data.velocity.toFixed(2) : '-';
-
-            // Logic Status Sederhana
             const statusEl = document.getElementById('latest-status');
-            const indicatorEl = document.getElementById('status-indicator');
             const connEl = document.getElementById('conn-status');
+            const indicatorEl = document.getElementById('status-indicator');
 
-            if (data.discharge > 20) {
-                statusEl.textContent = `BAHAYA (${data.discharge.toFixed(1)} m³/s)`;
-                statusEl.style.color = "#f5365c";
-            } else if (data.discharge > 10) {
-                statusEl.textContent = `SIAGA (${data.discharge.toFixed(1)} m³/s)`;
-                statusEl.style.color = "#fb6340";
-            } else {
-                statusEl.textContent = "AMAN TERKENDALI";
-                statusEl.style.color = "#2dce89";
-            }
+            if (data.discharge > 20) { statusEl.textContent = `BAHAYA (${data.discharge.toFixed(1)})`; statusEl.style.color = "#f5365c"; }
+            else if (data.discharge > 10) { statusEl.textContent = `SIAGA (${data.discharge.toFixed(1)})`; statusEl.style.color = "#fb6340"; }
+            else { statusEl.textContent = "AMAN"; statusEl.style.color = "#2dce89"; }
 
-            connEl.textContent = `Update: ${time} ${date}`;
-            indicatorEl.style.color = "#2dce89"; // Hijau (Online)
+            connEl.textContent = `Update: ${time}`;
+            indicatorEl.style.color = "#2dce89";
         }
 
         function updateDashboardEmpty() {
             document.getElementById('latest-status').textContent = "Tidak Ada Data";
-            document.getElementById('latest-status').style.color = "#888";
             document.getElementById('val-discharge').textContent = "-";
             document.getElementById('val-velocity').textContent = "-";
-            
-            // Kosongkan Grafik
             velChart.data.labels = []; velChart.data.datasets[0].data = []; velChart.update();
             disChart.data.labels = []; disChart.data.datasets[0].data = []; disChart.update();
         }
 
-        // --- Helper: Update Grafik ---
         function updateCharts(history) {
             const labels = history.map(d => new Date(d.timestamp).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}));
-            const velData = history.map(d => d.velocity);
-            const disData = history.map(d => d.discharge);
-
             velChart.data.labels = labels;
-            velChart.data.datasets[0].data = velData;
+            velChart.data.datasets[0].data = history.map(d => d.velocity);
             velChart.update();
-
             disChart.data.labels = labels;
-            disChart.data.datasets[0].data = disData;
+            disChart.data.datasets[0].data = history.map(d => d.discharge);
             disChart.update();
         }
 
-        // --- Helper: Update Peta ---
         function updateMapPosition(lat, lng, name) {
             if (marker) map.removeLayer(marker);
-            marker = L.marker([lat, lng]).addTo(map)
-                .bindPopup(`<b>${name}</b><br>Lat: ${lat}<br>Lng: ${lng}`).openPopup();
+            marker = L.marker([lat, lng]).addTo(map).bindPopup(`<b>${name}</b>`).openPopup();
             map.setView([lat, lng], 15);
         }
 
-        // --- Event Listener Dropdown ---
         document.getElementById('deviceSelect').addEventListener('change', (e) => {
-            const selectedOption = e.target.options[e.target.selectedIndex];
+            const opt = e.target.options[e.target.selectedIndex];
             currentDeviceId = e.target.value;
-            
-            if (currentDeviceId) {
-                const lat = selectedOption.dataset.lat;
-                const lng = selectedOption.dataset.lng;
-                const name = selectedOption.text;
-                
-                updateMapPosition(lat, lng, name);
+            if(currentDeviceId) {
+                updateMapPosition(opt.dataset.lat, opt.dataset.lng, opt.text);
                 loadSensorData(currentDeviceId);
             }
         });
 
-        // --- Auto Refresh Data (Setiap 10 Detik) ---
-        setInterval(() => {
-            if (currentDeviceId) loadSensorData(currentDeviceId);
-        }, 10000);
-
-        // --- Jalankan Saat Halaman Siap ---
-        document.addEventListener('DOMContentLoaded', () => {
-            initVisuals();
-            loadDevices();
-        });
-
+        setInterval(() => { if(currentDeviceId) loadSensorData(currentDeviceId); }, 10000);
     </script>
 
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
