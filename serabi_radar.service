@@ -1,0 +1,16 @@
+[Unit]
+Description=SERABI Radar Sensor Realtime Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=serabi
+WorkingDirectory=/home/serabi/capstonedesign
+ExecStart=/usr/bin/python3 /home/serabi/capstonedesign/main_pi.py
+Restart=always
+RestartSec=10
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
