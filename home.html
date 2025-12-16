@@ -8,49 +8,47 @@
     <meta name="theme-color" content="#0A3D52">
     <title>River Monitoring System - Dashboard</title>
 
+    <link rel="preconnect" href="https://ohbpqbhphpdlqzdnvtov.supabase.co" crossorigin>
     <link rel="preconnect" href="https://www.youtube.com">
     <link rel="preconnect" href="https://i.ytimg.com">
     <link rel="preconnect" href="https://unpkg.com">
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
-    <link rel="preconnect" href="https://ohbpqbhphpdlqzdnvtov.supabase.co">
 
-    <link rel="preload" href="css/style.css" as="style">
-    <link rel="stylesheet" href="css/style.css" />
+    <style>
+        /* Reset Dasar */
+        :root { --deep-ocean: #0A3D52; --water-dark: #006064; --white: #ffffff; --bg-page: #f8f9fe; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background-color: var(--bg-page); color: var(--deep-ocean); }
+        
+        /* Navbar Critical */
+        .navbar { background: var(--white); height: 70px; display: flex; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; padding: 0 20px; }
+        .nav-container { width: 100%; max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--deep-ocean); text-decoration: none; }
+        .nav-links { list-style: none; display: flex; gap: 20px; padding: 0; margin: 0; }
+        
+        /* Hero Section Critical */
+        .dashboard-container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .hero-section { background: linear-gradient(87deg, var(--deep-ocean) 0%, var(--water-dark) 100%); border-radius: 1rem; padding: 3rem 2rem; color: var(--white); text-align: center; margin-bottom: 30px; }
+        .hero-section h1 { margin: 0 0 10px 0; font-size: 2rem; }
+        
+        /* Dashboard Controls */
+        .dashboard-controls { text-align: center; margin: 20px 0; padding: 15px; background: #fff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        .dashboard-controls select { padding: 10px 15px; border-radius: 6px; border: 1px solid #ccc; font-size: 1rem; color: #0A3D52; font-weight: bold; min-width: 250px; cursor: pointer; }
+
+        /* Video Wrapper (Mencegah Layout Shift) */
+        .video-wrapper iframe { width: 100%; aspect-ratio: 16/9; border-radius: 12px; background: #000; }
+        
+        /* Responsive */
+        @media (max-width: 768px) { .nav-links { display: none; } }
+    </style>
+
+    <link rel="preload" href="css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="css/style.css"></noscript>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="js/lang.js" defer></script>
-
-    <style>
-        /* CSS Tambahan untuk Lite YouTube Embed */
-        .video-wrapper iframe {
-            background-color: #000;
-            width: 100%;
-            height: 100%;
-            aspect-ratio: 16 / 9;
-            border-radius: 12px;
-        }
-        /* Style Dropdown Dashboard */
-        .dashboard-controls {
-            text-align: center;
-            margin: 20px 0;
-            padding: 15px;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-        .dashboard-controls select {
-            padding: 10px 15px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 1rem;
-            color: #0A3D52;
-            font-weight: bold;
-            min-width: 250px;
-        }
-    </style>
 </head>
 <body>
 
@@ -101,24 +99,22 @@
                     <div class="step-item">
                         <div class="step-number">1</div>
                         <div class="step-content">
-                            <h3>Radar Sensing (uRAD)</h3>
-                            <p>Gelombang 24GHz dipancarkan ke permukaan air. Sinyal pantulan ditangkap untuk mengukur <strong>Doppler Shift</strong>.</p>
+                            <h4>Radar Sensing (uRAD)</h4>
+                            <p>Gelombang 24GHz dipancarkan ke permukaan air. Pantulan sinyal diukur untuk mendapatkan <strong>Doppler Shift</strong>.</p>
                         </div>
                     </div>
-
                     <div class="step-item">
                         <div class="step-number">2</div>
                         <div class="step-content">
-                            <h3>Data Processing (Raspberry Pi)</h3>
-                            <p>Algoritma FFT (Fast Fourier Transform) memisahkan sinyal murni kecepatan air dari noise lingkungan.</p>
+                            <h4>Data Processing</h4>
+                            <p>Raspberry Pi memproses sinyal menggunakan algoritma FFT untuk memisahkan noise lingkungan.</p>
                         </div>
                     </div>
-
                     <div class="step-item">
                         <div class="step-number">3</div>
                         <div class="step-content">
-                            <h3>Visualization (Web Dashboard)</h3>
-                            <p>Data dikirim via HTTP Request ke database Supabase dan ditampilkan secara Real-Time.</p>
+                            <h4>Real-time Dashboard</h4>
+                            <p>Data dikirim ke database Supabase dan divisualisasikan secara langsung pada website ini.</p>
                         </div>
                     </div>
                 </div>
@@ -139,38 +135,47 @@
         <div class="dashboard-controls">
             <label for="deviceSelect">Pilih Lokasi Pemantauan: </label>
             <select id="deviceSelect">
-                <option value="">Memuat lokasi...</option>
+                <option value="">Memuat data alat...</option>
             </select>
         </div>
 
         <section class="stats-grid">
             <div class="card status-card">
                 <h3 data-i18n="status_title">Status Terkini</h3>
+                
                 <div id="latest-status" class="status-value" style="font-size: 1.2rem;">Menunggu Data...</div>
+                
                 <div class="status-indicator" id="status-indicator">
-                    <span class="dot"></span> <span id="conn-status">Offline</span>
+                    <span class="dot"></span> <span id="conn-status">Menghubungkan...</span>
                 </div>
-                <div style="margin-top:10px; font-size:0.9rem; color:#666;">
-                    Debit: <strong id="val-discharge">-</strong> m³/s <br>
-                    Kecepatan: <strong id="val-velocity">-</strong> m/s
+                
+                <div style="margin-top:15px; font-size:0.95rem; color:#525f7f; border-top:1px solid #eee; padding-top:10px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span>Debit Air:</span>
+                        <strong id="val-discharge" style="font-size:1.1rem;">-</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>Kecepatan Arus:</span>
+                        <strong id="val-velocity" style="font-size:1.1rem;">-</strong>
+                    </div>
                 </div>
             </div>
             
             <div class="card map-card">
                 <h3 data-i18n="map_title">Lokasi Sungai</h3>
-                <div id="map" style="height: 400px; width: 100%; z-index: 1; position: relative;"></div>
+                <div id="map" style="height: 350px; width: 100%; border-radius: 8px; z-index: 1;"></div>
             </div>
         </section>
 
         <section class="charts-grid">
             <div class="card chart-card">
-                <h3 data-i18n="chart_vel_title">Grafik Kecepatan (Terakhir)</h3>
+                <h3 data-i18n="chart_vel_title">Grafik Kecepatan (1 Jam Terakhir)</h3>
                 <div class="chart-container">
                     <canvas id="velocityChart"></canvas>
                 </div>
             </div>
             <div class="card chart-card">
-                <h3 data-i18n="chart_dis_title">Grafik Debit (Terakhir)</h3>
+                <h3 data-i18n="chart_dis_title">Grafik Debit (1 Jam Terakhir)</h3>
                 <div class="chart-container">
                     <canvas id="dischargeChart"></canvas>
                 </div>
@@ -181,54 +186,35 @@
 
     <section class="team-section">
         <h2 class="section-title" data-i18n="team_title">Tim Pengembang</h2>
-    
         <h3 class="team-subtitle">Dosen Pembimbing</h3>
         <div class="team-grid supervisors">
             <div class="team-card">
-                <div class="avatar">
-                    <img src="assets/images/lecturer1.jpg" alt="Dosen 1" loading="lazy" width="100" height="100"> 
-                </div>
-                <h4>Prof. Dr. Aloysius Adya Pramudita, S.T., M.T.</h4>
-                <p>Pembimbing Utama</p>
+                <div class="avatar"><img src="assets/images/lecturer1.jpg" alt="Prof. Aloysius" loading="lazy" width="100" height="100"></div>
+                <h4>Prof. Dr. Aloysius Adya Pramudita</h4><p>Pembimbing Utama</p>
             </div>
             <div class="team-card">
-                <div class="avatar">
-                    <img src="assets/images/lecturer2.jpg" alt="Dosen 2" loading="lazy" width="100" height="100">
-                </div>
-                <h4>Arif Abdul Aziz, S.Si., M.Sc., Ph.D. </h4>
-                <p>Pembimbing Pendamping</p>
+                <div class="avatar"><img src="assets/images/lecturer2.jpg" alt="Dr. Arif" loading="lazy" width="100" height="100"></div>
+                <h4>Arif Abdul Aziz, Ph.D.</h4><p>Pembimbing Pendamping</p>
             </div>
         </div>
 
         <h3 class="team-subtitle">Tim Mahasiswa</h3>
         <div class="team-grid students">
             <div class="team-card">
-                <div class="avatar">
-                    <img src="assets/images/student1.jpg" alt="Student 1" loading="lazy" width="100" height="100">
-                </div>
-                <h4>Lutvi Adam Harahap</h4>
-                <p>Lead System Integrator</p>
+                <div class="avatar"><img src="assets/images/student1.jpg" alt="Lutvi" loading="lazy" width="100" height="100"></div>
+                <h4>Lutvi Adam Harahap</h4><p>Lead System Integrator</p>
             </div>
             <div class="team-card">
-                <div class="avatar">
-                    <img src="assets/images/student2.jpg" alt="Student 2" loading="lazy" width="100" height="100">
-                </div>
-                <h4>Indah Delita Permatasari</h4>
-                <p>System Verification Lead</p>
+                <div class="avatar"><img src="assets/images/student2.jpg" alt="Indah" loading="lazy" width="100" height="100"></div>
+                <h4>Indah Delita Permatasari</h4><p>System Verification Lead</p>
             </div>
             <div class="team-card">
-                <div class="avatar">
-                    <img src="assets/images/student3.jpg" alt="Student 3" loading="lazy" width="100" height="100">
-                </div>
-                <h4>Arnoldus Gratio Darryl Andyka</h4>
-                <p>Hardware Implementation Lead</p>
+                <div class="avatar"><img src="assets/images/student3.jpg" alt="Arnold" loading="lazy" width="100" height="100"></div>
+                <h4>Arnoldus Gratio Darryl</h4><p>Hardware Lead</p>
             </div>
             <div class="team-card">
-                <div class="avatar">
-                    <img src="assets/images/student4.jpg" alt="Student 4" loading="lazy" width="100" height="100">
-                </div>
-                <h4>Husna Firyal Az-Zahra</h4>
-                <p>Full Stack IoT Developer</p>
+                <div class="avatar"><img src="assets/images/student4.jpg" alt="Husna" loading="lazy" width="100" height="100"></div>
+                <h4>Husna Firyal Az-Zahra</h4><p>Full Stack IoT Dev</p>
             </div>
         </div>
     </section>
@@ -237,15 +223,11 @@
         <div class="footer-container">
             <div class="footer-col">
                 <h3 class="footer-brand">SERABI</h3>
-                <p class="footer-desc">
-                    Sistem Estimasi Debit Air Sungai Berbasis Radar.<br>
-                    Proyek Akhir S1 Teknik Telekomunikasi.
-                </p>
+                <p class="footer-desc">Sistem Estimasi Debit Air Sungai Berbasis Radar.<br>Proyek Akhir S1 Teknik Telekomunikasi.</p>
                 <div class="uni-badge">
-                    <img src="assets/images/telkom-logo.png" alt="Telkom University" width="150" height="40" style="height: 40px; width: auto;">
+                    <img src="assets/images/telkom-logo.png" alt="Telkom University" width="150" height="45" style="height: 45px; width: auto;">
                 </div>
             </div>
-
             <div class="footer-col">
                 <h4>Navigasi</h4>
                 <ul class="footer-links">
@@ -255,30 +237,26 @@
                     <li><a href="login.html">Login Admin</a></li>
                 </ul>
             </div>
-
             <div class="footer-col">
                 <h4>Hubungi Kami</h4>
                 <ul class="contact-list">
-                    <li>📍 <strong>Telkom University</strong><br>Jl. Telekomunikasi No. 1, Terusan Buahbatu, Bandung 40257</li>
+                    <li>📍 <strong>Telkom University</strong><br>Bandung, Indonesia</li>
                     <li>📧 husnafrylazz@student.telkomuniversity.ac.id</li>
                 </ul>
             </div>
         </div>
-
         <div class="footer-bottom">
-            <p>&copy; 2025 River Monitoring System. All Rights Reserved.</p>
-            <p class="credits">Designed for Capstone Design Project</p>
+            <p>&copy; 2025 River Monitoring System.</p>
         </div>
     </footer>
 
     <script type="module">
         import { supabase } from './js/supabase.js';
 
-        let map, marker, velChart, disChart, currentDeviceId = null;
+        let map, marker, velChart, disChart, currentDeviceId;
 
-        // Init saat DOM siap
+        // Tunggu semua script defer selesai load
         document.addEventListener('DOMContentLoaded', () => {
-            // Cek apakah library sudah load (karena defer)
             const checkLibs = setInterval(() => {
                 if (typeof L !== 'undefined' && typeof Chart !== 'undefined') {
                     clearInterval(checkLibs);
@@ -288,37 +266,50 @@
             }, 100);
         });
 
+        // 1. Setup Peta & Grafik Kosong
         function initVisuals() {
-            map = L.map('map', { zoomControl: false }).setView([-6.97, 107.63], 13);
-            L.control.zoom({ position: 'bottomright' }).addTo(map);
+            // Map
+            map = L.map('map', {zoomControl: false}).setView([-6.97, 107.63], 13);
+            L.control.zoom({position:'bottomright'}).addTo(map);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
-                attribution: '&copy; CARTO',
-                maxZoom: 19
+                attribution: '&copy; CARTO', maxZoom: 19
             }).addTo(map);
 
+            // Grafik Config
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { display: false } }, // Sembunyikan label X agar rapi di mobile
+                elements: { point: { radius: 2 } }
+            };
+
+            // Velocity Chart
             const ctxVel = document.getElementById('velocityChart').getContext('2d');
             velChart = new Chart(ctxVel, {
                 type: 'line',
-                data: { labels: [], datasets: [{ label: 'Kecepatan (m/s)', data: [], borderColor: '#3498db', backgroundColor: 'rgba(52, 152, 219, 0.1)', fill: true, tension: 0.4 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                data: { labels: [], datasets: [{ label: 'Kecepatan', data: [], borderColor: '#3498db', backgroundColor: 'rgba(52, 152, 219, 0.1)', fill: true, tension: 0.3 }] },
+                options: commonOptions
             });
 
+            // Discharge Chart
             const ctxDis = document.getElementById('dischargeChart').getContext('2d');
             disChart = new Chart(ctxDis, {
                 type: 'line',
-                data: { labels: [], datasets: [{ label: 'Debit (m³/s)', data: [], borderColor: '#2dce89', backgroundColor: 'rgba(45, 206, 137, 0.1)', fill: true, tension: 0.4 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                data: { labels: [], datasets: [{ label: 'Debit', data: [], borderColor: '#2dce89', backgroundColor: 'rgba(45, 206, 137, 0.1)', fill: true, tension: 0.3 }] },
+                options: commonOptions
             });
         }
 
+        // 2. Load List Devices
         async function loadDevices() {
             const select = document.getElementById('deviceSelect');
             try {
                 const { data, error } = await supabase.from('devices').select('id, name, location_lat, location_lng');
-                if (error) throw error;
-                select.innerHTML = ''; 
+                if(error) throw error;
                 
-                if (!data.length) { select.innerHTML = '<option>Tidak ada alat</option>'; return; }
+                select.innerHTML = '';
+                if(!data.length) { select.innerHTML = '<option>Tidak ada alat aktif</option>'; return; }
 
                 data.forEach(dev => {
                     const opt = document.createElement('option');
@@ -329,81 +320,96 @@
                     select.appendChild(opt);
                 });
 
+                // Pilih alat pertama
                 currentDeviceId = data[0].id;
-                updateMapPosition(data[0].location_lat, data[0].location_lng, data[0].name);
-                loadSensorData(currentDeviceId);
+                updateMap(data[0].location_lat, data[0].location_lng, data[0].name);
+                loadReadings(currentDeviceId);
+
             } catch (err) { console.error(err); }
         }
 
-        async function loadSensorData(deviceId) {
+        // 3. Load Data Sensor
+        async function loadReadings(devId) {
             try {
-                document.getElementById('latest-status').textContent = "Memuat...";
+                document.getElementById('latest-status').textContent = "Mengambil data...";
                 const { data, error } = await supabase.from('sensor_readings')
-                    .select('*').eq('device_id', deviceId).order('timestamp', { ascending: false }).limit(20);
+                    .select('*').eq('device_id', devId).order('timestamp', {ascending:false}).limit(20);
+                
+                if(error) throw error;
+                if(!data || !data.length) return setEmpty();
 
-                if (error) throw error;
-                if (!data || !data.length) { updateDashboardEmpty(); return; }
+                updateStatus(data[0]);
+                updateCharts(data.reverse()); // Grafik butuh urutan lama -> baru
 
-                updateStatusCard(data[0]);
-                updateCharts(data.reverse());
             } catch (err) {
-                document.getElementById('latest-status').textContent = "Offline";
+                console.error(err);
+                document.getElementById('conn-status').textContent = "Error Koneksi";
+                document.getElementById('conn-status').style.color = "red";
             }
         }
 
-        function updateStatusCard(data) {
-            const time = new Date(data.timestamp).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
-            document.getElementById('val-discharge').textContent = data.discharge?.toFixed(2) || '-';
-            document.getElementById('val-velocity').textContent = data.velocity?.toFixed(2) || '-';
+        function updateStatus(row) {
+            const date = new Date(row.timestamp);
+            const timeStr = date.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
             
-            const statusEl = document.getElementById('latest-status');
+            document.getElementById('val-discharge').textContent = row.discharge?.toFixed(2) + " m³/s";
+            document.getElementById('val-velocity').textContent = row.velocity?.toFixed(2) + " m/s";
+            
+            const statEl = document.getElementById('latest-status');
+            const indEl = document.getElementById('status-indicator');
             const connEl = document.getElementById('conn-status');
-            const indicatorEl = document.getElementById('status-indicator');
 
-            if (data.discharge > 20) { statusEl.textContent = `BAHAYA (${data.discharge.toFixed(1)})`; statusEl.style.color = "#f5365c"; }
-            else if (data.discharge > 10) { statusEl.textContent = `SIAGA (${data.discharge.toFixed(1)})`; statusEl.style.color = "#fb6340"; }
-            else { statusEl.textContent = "AMAN"; statusEl.style.color = "#2dce89"; }
+            if(row.discharge > 20) {
+                statEl.textContent = "BAHAYA - BANJIR";
+                statEl.style.color = "#f5365c";
+            } else if(row.discharge > 10) {
+                statEl.textContent = "SIAGA";
+                statEl.style.color = "#fb6340";
+            } else {
+                statEl.textContent = "NORMAL / AMAN";
+                statEl.style.color = "#2dce89";
+            }
 
-            connEl.textContent = `Update: ${time}`;
-            indicatorEl.style.color = "#2dce89";
-        }
-
-        function updateDashboardEmpty() {
-            document.getElementById('latest-status').textContent = "Tidak Ada Data";
-            document.getElementById('val-discharge').textContent = "-";
-            document.getElementById('val-velocity').textContent = "-";
-            velChart.data.labels = []; velChart.data.datasets[0].data = []; velChart.update();
-            disChart.data.labels = []; disChart.data.datasets[0].data = []; disChart.update();
+            connEl.textContent = `Update: ${timeStr}`;
+            indEl.style.color = "#2dce89";
         }
 
         function updateCharts(history) {
-            const labels = history.map(d => new Date(d.timestamp).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}));
-            velChart.data.labels = labels;
+            const lbls = history.map(d => new Date(d.timestamp).toLocaleTimeString('id-ID'));
+            velChart.data.labels = lbls;
             velChart.data.datasets[0].data = history.map(d => d.velocity);
             velChart.update();
-            disChart.data.labels = labels;
+
+            disChart.data.labels = lbls;
             disChart.data.datasets[0].data = history.map(d => d.discharge);
             disChart.update();
         }
 
-        function updateMapPosition(lat, lng, name) {
-            if (marker) map.removeLayer(marker);
+        function updateMap(lat, lng, name) {
+            if(marker) map.removeLayer(marker);
             marker = L.marker([lat, lng]).addTo(map).bindPopup(`<b>${name}</b>`).openPopup();
             map.setView([lat, lng], 15);
         }
 
+        function setEmpty() {
+            document.getElementById('latest-status').textContent = "Tidak Ada Data";
+            document.getElementById('val-discharge').textContent = "-";
+            document.getElementById('val-velocity').textContent = "-";
+        }
+
+        // Listener Ganti Alat
         document.getElementById('deviceSelect').addEventListener('change', (e) => {
             const opt = e.target.options[e.target.selectedIndex];
             currentDeviceId = e.target.value;
-            if(currentDeviceId) {
-                updateMapPosition(opt.dataset.lat, opt.dataset.lng, opt.text);
-                loadSensorData(currentDeviceId);
-            }
+            updateMap(opt.dataset.lat, opt.dataset.lng, opt.text);
+            loadReadings(currentDeviceId);
         });
 
-        setInterval(() => { if(currentDeviceId) loadSensorData(currentDeviceId); }, 10000);
-    </script>
+        // Auto Refresh 10 Detik
+        setInterval(() => { if(currentDeviceId) loadReadings(currentDeviceId); }, 10000);
 
+    </script>
+    
     <script type="module" src="js/main.js"></script>
 </body>
 </html>
