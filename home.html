@@ -15,7 +15,7 @@
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
 
     <style>
-        /* Reset & Layout */
+        /* Reset & Layout Dasar */
         :root { --deep-ocean: #0A3D52; --water-dark: #006064; --white: #ffffff; --bg-page: #f8f9fe; }
         body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background-color: var(--bg-page); color: var(--deep-ocean); }
         
@@ -27,14 +27,18 @@
         .nav-links a { text-decoration: none; color: #555; font-weight: 600; font-size: 0.9rem; }
         .nav-links a.active { color: var(--water-dark); }
 
-        /* Hero */
+        /* Dashboard Container */
         .dashboard-container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        
+        /* Hero Section */
         .hero-section { background: linear-gradient(87deg, var(--deep-ocean) 0%, var(--water-dark) 100%); border-radius: 1rem; padding: 3rem 2rem; color: var(--white); text-align: center; margin-bottom: 30px; }
         .hero-section h1 { margin: 0 0 10px 0; font-size: 2rem; }
         
-        /* Controls & Video */
+        /* Dashboard Controls (Dropdown) */
         .dashboard-controls { text-align: center; margin: 20px 0; padding: 15px; background: #fff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #eee; }
         .dashboard-controls select { padding: 10px 15px; border-radius: 6px; border: 1px solid #ccc; font-size: 1rem; color: #0A3D52; font-weight: bold; min-width: 250px; cursor: pointer; }
+
+        /* Video Wrapper */
         .video-wrapper iframe { width: 100%; aspect-ratio: 16/9; border-radius: 12px; background: #000; }
         
         @media (max-width: 768px) { .nav-links { display: none; } }
@@ -79,7 +83,6 @@
             <h2 class="section-title" data-i18n="system_title">Cara Kerja Sistem</h2>
             <div class="system-container">
                 <div class="video-wrapper">
-                    
                     <iframe 
                         width="560" 
                         height="315" 
@@ -188,11 +191,11 @@
         <h3 class="team-subtitle">Dosen Pembimbing</h3>
         <div class="team-grid supervisors">
             <div class="team-card">
-                <div class="avatar"><img src="assets/images/lecturer1.jpg" alt="Prof. Aloysius" loading="lazy" width="100" height="100"></div>
+                <div class="avatar"><img src="assets/images/lecturer1.jpg" alt="Prof. Aloysius" loading="lazy"></div>
                 <h4>Prof. Dr. Aloysius Adya Pramudita</h4><p>Pembimbing Utama</p>
             </div>
             <div class="team-card">
-                <div class="avatar"><img src="assets/images/lecturer2.jpg" alt="Dr. Arif" loading="lazy" width="100" height="100"></div>
+                <div class="avatar"><img src="assets/images/lecturer2.jpg" alt="Dr. Arif" loading="lazy"></div>
                 <h4>Arif Abdul Aziz, Ph.D.</h4><p>Pembimbing Pendamping</p>
             </div>
         </div>
@@ -200,19 +203,19 @@
         <h3 class="team-subtitle">Tim Mahasiswa</h3>
         <div class="team-grid students">
             <div class="team-card">
-                <div class="avatar"><img src="assets/images/student1.jpg" alt="Lutvi" loading="lazy" width="100" height="100"></div>
+                <div class="avatar"><img src="assets/images/student1.jpg" alt="Lutvi" loading="lazy"></div>
                 <h4>Lutvi Adam Harahap</h4><p>Lead System Integrator</p>
             </div>
             <div class="team-card">
-                <div class="avatar"><img src="assets/images/student2.jpg" alt="Indah" loading="lazy" width="100" height="100"></div>
+                <div class="avatar"><img src="assets/images/student2.jpg" alt="Indah" loading="lazy"></div>
                 <h4>Indah Delita Permatasari</h4><p>System Verification Lead</p>
             </div>
             <div class="team-card">
-                <div class="avatar"><img src="assets/images/student3.jpg" alt="Arnold" loading="lazy" width="100" height="100"></div>
+                <div class="avatar"><img src="assets/images/student3.jpg" alt="Arnold" loading="lazy"></div>
                 <h4>Arnoldus Gratio Darryl</h4><p>Hardware Lead</p>
             </div>
             <div class="team-card">
-                <div class="avatar"><img src="assets/images/student4.jpg" alt="Husna" loading="lazy" width="100" height="100"></div>
+                <div class="avatar"><img src="assets/images/student4.jpg" alt="Husna" loading="lazy"></div>
                 <h4>Husna Firyal Az-Zahra</h4><p>Full Stack IoT Dev</p>
             </div>
         </div>
@@ -254,18 +257,23 @@
 
         let map, marker, velChart, disChart, currentDeviceId;
 
-        // Tunggu dokumen siap
-        document.addEventListener('DOMContentLoaded', () => {
-            // Kita tunggu library berat (Leaflet & Chart) yg di-defer
-            const checkLibs = setInterval(() => {
-                if (typeof L !== 'undefined' && typeof Chart !== 'undefined') {
-                    clearInterval(checkLibs);
-                    console.log("Libraries Loaded. Init Dashboard...");
-                    initVisuals();
-                    loadDevices();
-                }
-            }, 100);
+        // Tunggu halaman siap sepenuhnya
+        window.addEventListener('load', async () => {
+            console.log("Halaman Loaded. Memulai Dashboard...");
+            
+            // Cek apakah library Leaflet & Chart sudah terload (karena defer)
+            // Jika belum, beri delay sedikit
+            if (typeof L === 'undefined' || typeof Chart === 'undefined') {
+                setTimeout(initDashboard, 500); 
+            } else {
+                initDashboard();
+            }
         });
+
+        function initDashboard() {
+            initVisuals();
+            loadDevices();
+        }
 
         // 1. Setup Peta & Grafik Kosong
         function initVisuals() {
@@ -306,11 +314,16 @@
         async function loadDevices() {
             const select = document.getElementById('deviceSelect');
             try {
+                // Ambil data alat dari Supabase
                 const { data, error } = await supabase.from('devices').select('id, name, location_lat, location_lng');
+                
                 if(error) throw error;
                 
                 select.innerHTML = '';
-                if(!data.length) { select.innerHTML = '<option>Tidak ada alat aktif</option>'; return; }
+                if(!data || data.length === 0) { 
+                    select.innerHTML = '<option>Tidak ada alat aktif</option>'; 
+                    return; 
+                }
 
                 data.forEach(dev => {
                     const opt = document.createElement('option');
@@ -321,7 +334,7 @@
                     select.appendChild(opt);
                 });
 
-                // Pilih alat pertama
+                // Pilih alat pertama otomatis
                 currentDeviceId = data[0].id;
                 updateMap(data[0].location_lat, data[0].location_lng, data[0].name);
                 loadReadings(currentDeviceId);
@@ -336,19 +349,27 @@
         async function loadReadings(devId) {
             try {
                 document.getElementById('latest-status').textContent = "Mengambil data...";
+                
                 const { data, error } = await supabase.from('sensor_readings')
-                    .select('*').eq('device_id', devId).order('timestamp', {ascending:false}).limit(20);
+                    .select('*')
+                    .eq('device_id', devId)
+                    .order('timestamp', {ascending:false})
+                    .limit(20);
                 
                 if(error) throw error;
-                if(!data || !data.length) return setEmpty();
+                
+                if(!data || data.length === 0) {
+                    setEmpty();
+                    return;
+                }
 
                 updateStatus(data[0]);
-                updateCharts(data.reverse()); // Grafik butuh urutan lama -> baru
+                updateCharts(data.slice().reverse()); // Urutkan lama -> baru
 
             } catch (err) {
                 console.error("Gagal load readings:", err);
                 document.getElementById('latest-status').textContent = "Error";
-                document.getElementById('conn-status').textContent = "Offline/Error";
+                document.getElementById('conn-status').textContent = "Offline";
                 document.getElementById('conn-status').style.color = "red";
             }
         }
@@ -357,8 +378,8 @@
             const date = new Date(row.timestamp);
             const timeStr = date.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
             
-            document.getElementById('val-discharge').textContent = row.discharge?.toFixed(2) + " m³/s";
-            document.getElementById('val-velocity').textContent = row.velocity?.toFixed(2) + " m/s";
+            document.getElementById('val-discharge').textContent = (row.discharge?.toFixed(2) || '0') + " m³/s";
+            document.getElementById('val-velocity').textContent = (row.velocity?.toFixed(2) || '0') + " m/s";
             
             const statEl = document.getElementById('latest-status');
             const indEl = document.getElementById('status-indicator');
@@ -380,7 +401,7 @@
         }
 
         function updateCharts(history) {
-            const lbls = history.map(d => new Date(d.timestamp).toLocaleTimeString('id-ID'));
+            const lbls = history.map(d => new Date(d.timestamp).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}));
             velChart.data.labels = lbls;
             velChart.data.datasets[0].data = history.map(d => d.velocity);
             velChart.update();
