@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-    <meta name="description" content="Sistem monitoring banjir berbasis radar (SERABI). Pantau debit air sungai dan kecepatan arus secara real-time.">
+    <meta name="description" content="Sistem monitoring banjir berbasis radar (SERABI).">
     <meta name="theme-color" content="#0A3D52">
     <title>River Monitoring System - Dashboard</title>
 
@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
 
     <style>
-        /* Reset & Layout */
+        /* --- CSS UTAMA (Inline) --- */
         :root { --deep-ocean: #0A3D52; --water-dark: #006064; --white: #ffffff; --bg-page: #f8f9fe; }
         body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background-color: var(--bg-page); color: var(--deep-ocean); }
         
@@ -25,31 +25,40 @@
         .nav-links a { text-decoration: none; color: #555; font-weight: 600; font-size: 0.9rem; }
         .nav-links a.active { color: var(--water-dark); }
 
-        /* Dashboard Container */
+        /* Container */
         .dashboard-container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
-        
-        /* Hero Section */
         .hero-section { background: linear-gradient(87deg, var(--deep-ocean) 0%, var(--water-dark) 100%); border-radius: 1rem; padding: 3rem 2rem; color: var(--white); text-align: center; margin-bottom: 30px; }
         .hero-section h1 { margin: 0 0 10px 0; font-size: 2rem; }
         
         /* Controls & Video */
         .dashboard-controls { text-align: center; margin: 20px 0; padding: 15px; background: #fff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #eee; }
         .dashboard-controls select { padding: 10px 15px; border-radius: 6px; border: 1px solid #ccc; font-size: 1rem; color: #0A3D52; font-weight: bold; min-width: 250px; cursor: pointer; }
-        
         .video-wrapper iframe { width: 100%; aspect-ratio: 16/9; border-radius: 12px; background: #000; }
         
-        /* Fallback Avatar */
-        .avatar { background-color: #eee; }
-        .avatar img { object-fit: cover; width: 100%; height: 100%; }
+        /* SOLUSI GAMBAR RUSAK (Avatar Fallback) */
+        .avatar { 
+            background-color: #ddd; /* Warna abu-abu */
+            width: 100px; height: 100px; 
+            border-radius: 50%; 
+            margin: 0 auto 10px auto;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            border: 3px solid #eefbfd;
+        }
+        .avatar img { 
+            width: 100%; height: 100%; object-fit: cover;
+            /* Sembunyikan gambar jika error/404 agar background abu yang muncul */
+            display: block; 
+        }
+        /* Helper class jika ingin menyembunyikan img lewat JS */
+        .img-error { display: none !important; }
 
         @media (max-width: 768px) { .nav-links { display: none; } }
     </style>
 
     <link rel="preload" href="css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="css/style.css"></noscript>
-    
-    <link rel="preload" href="https://unpkg.com/leaflet/dist/leaflet.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"></noscript>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
@@ -85,7 +94,6 @@
             <h2 class="section-title" data-i18n="system_title">Cara Kerja Sistem</h2>
             <div class="system-container">
                 <div class="video-wrapper">
-                    
                     <iframe 
                         width="560" height="315" 
                         src="https://www.youtube.com/embed/kVnZWZr9LPc"
@@ -122,10 +130,12 @@
                 </div>
                 <div style="margin-top:15px; font-size:0.95rem; color:#525f7f; border-top:1px solid #eee; padding-top:10px;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                        <span>Debit Air:</span> <strong id="val-discharge" style="font-size:1.1rem;">-</strong>
+                        <span>Debit Air:</span>
+                        <strong id="val-discharge" style="font-size:1.1rem;">-</strong>
                     </div>
                     <div style="display:flex; justify-content:space-between;">
-                        <span>Kecepatan Arus:</span> <strong id="val-velocity" style="font-size:1.1rem;">-</strong>
+                        <span>Kecepatan Arus:</span>
+                        <strong id="val-velocity" style="font-size:1.1rem;">-</strong>
                     </div>
                 </div>
             </div>
@@ -154,21 +164,21 @@
         <h3 class="team-subtitle">Dosen Pembimbing</h3>
         <div class="team-grid supervisors">
             <div class="team-card">
-                <div class="avatar"><img src="assets/images/lecturer1.jpg" alt="Prof. Aloysius" onerror="this.src='https://via.placeholder.com/100'"></div>
+                <div class="avatar"><img src="assets/images/lecturer1.jpg" alt="Prof. Aloysius" onerror="this.classList.add('img-error')"></div>
                 <h4>Prof. Dr. Aloysius Adya</h4><p>Pembimbing Utama</p>
             </div>
             <div class="team-card">
-                <div class="avatar"><img src="assets/images/lecturer2.jpg" alt="Dr. Arif" onerror="this.src='https://via.placeholder.com/100'"></div>
+                <div class="avatar"><img src="assets/images/lecturer2.jpg" alt="Dr. Arif" onerror="this.classList.add('img-error')"></div>
                 <h4>Arif Abdul Aziz, Ph.D.</h4><p>Pembimbing Pendamping</p>
             </div>
         </div>
 
         <h3 class="team-subtitle">Tim Mahasiswa</h3>
         <div class="team-grid students">
-            <div class="team-card"><div class="avatar"><img src="assets/images/student1.jpg" alt="Lutvi" onerror="this.src='https://via.placeholder.com/100'"></div><h4>Lutvi Adam Harahap</h4><p>System Integrator</p></div>
-            <div class="team-card"><div class="avatar"><img src="assets/images/student2.jpg" alt="Indah" onerror="this.src='https://via.placeholder.com/100'"></div><h4>Indah Delita P.</h4><p>System Verification</p></div>
-            <div class="team-card"><div class="avatar"><img src="assets/images/student3.jpg" alt="Arnold" onerror="this.src='https://via.placeholder.com/100'"></div><h4>Arnoldus Gratio</h4><p>Hardware Lead</p></div>
-            <div class="team-card"><div class="avatar"><img src="assets/images/student4.jpg" alt="Husna" onerror="this.src='https://via.placeholder.com/100'"></div><h4>Husna Firyal</h4><p>IoT Developer</p></div>
+            <div class="team-card"><div class="avatar"><img src="assets/images/student1.jpg" alt="Lutvi" onerror="this.classList.add('img-error')"></div><h4>Lutvi Adam Harahap</h4><p>System Integrator</p></div>
+            <div class="team-card"><div class="avatar"><img src="assets/images/student2.jpg" alt="Indah" onerror="this.classList.add('img-error')"></div><h4>Indah Delita P.</h4><p>System Verification</p></div>
+            <div class="team-card"><div class="avatar"><img src="assets/images/student3.jpg" alt="Arnold" onerror="this.classList.add('img-error')"></div><h4>Arnoldus Gratio</h4><p>Hardware Lead</p></div>
+            <div class="team-card"><div class="avatar"><img src="assets/images/student4.jpg" alt="Husna" onerror="this.classList.add('img-error')"></div><h4>Husna Firyal</h4><p>IoT Developer</p></div>
         </div>
     </section>
 
@@ -177,7 +187,9 @@
             <div class="footer-col">
                 <h3 class="footer-brand">SERABI</h3>
                 <p class="footer-desc">Sistem Estimasi Debit Air Sungai Berbasis Radar.</p>
-                <div class="uni-badge"><img src="assets/images/telkom-logo.png" alt="Telkom University" width="150" height="45" style="height: 45px; width: auto;" onerror="this.style.display='none'"></div>
+                <div class="uni-badge">
+                    <img src="assets/images/telkom-logo.png" alt="Telkom University" width="150" height="45" style="height: 45px; width: auto;" onerror="this.style.display='none'">
+                </div>
             </div>
             <div class="footer-col">
                 <h4>Navigasi</h4>
@@ -203,17 +215,15 @@
 
         let map, marker, velChart, disChart, currentDeviceId;
 
-        // Initialize when window loads
         window.addEventListener('load', async () => {
             console.log("System Check: Checking libraries...");
             
             if (!supabase) {
-                console.error("Supabase tidak terdefinisi!");
+                console.error("Supabase Error!");
                 document.getElementById('latest-status').textContent = "Error System";
                 return;
             }
 
-            // Retry until libraries load
             const checkLibs = setInterval(() => {
                 if (typeof L !== 'undefined' && typeof Chart !== 'undefined') {
                     clearInterval(checkLibs);
@@ -228,15 +238,12 @@
             loadDevices();
         }
 
-        // 1. Setup Visual Elements
         function initVisuals() {
-            // Prevent map re-initialization
-            if (map !== undefined) {
-                map.remove();
+            // FIX MAP ERROR: Hapus map jika sudah ada di DOM
+            const container = L.DomUtil.get('map');
+            if(container != null){
+                container._leaflet_id = null;
             }
-
-            const mapContainer = document.getElementById('map');
-            if(!mapContainer) return;
 
             map = L.map('map', {zoomControl: false}).setView([-6.97, 107.63], 13);
             L.control.zoom({position:'bottomright'}).addTo(map);
@@ -273,7 +280,6 @@
             }
         }
 
-        // 2. Load Devices
         async function loadDevices() {
             const select = document.getElementById('deviceSelect');
             try {
@@ -306,7 +312,6 @@
             }
         }
 
-        // 3. Load Readings
         async function loadReadings(devId) {
             try {
                 document.getElementById('latest-status').textContent = "Mengambil data...";
