@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Visualization - SERABI</title>
+    <title>Visualisasi Radar - SERABI</title>
     <link rel="stylesheet" href="css/style.css">
-    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -13,7 +12,7 @@
 
     <nav class="navbar">
         <div class="nav-container">
-            <a href="index.html" class="logo">SERABI</a>
+            <a href="index.html" class="logo">SERABI - Radar Monitoring</a>
             <ul class="nav-links">
                 <li><a href="index.html">Beranda</a></li>
                 <li><a href="public_dashboard.html">Dashboard Publik</a></li>
@@ -28,7 +27,7 @@
         <div class="mode-selector-card">
             <div class="mode-text">
                 <h3>Sumber Data</h3>
-                <p id="mode-desc">Menunggu inisialisasi...</p>
+                <p id="mode-desc">Menunggu data dari 'main_pi.py' (ID: 6)</p>
             </div>
             <div class="toggle-wrapper">
                 <span class="toggle-label">REAL SITE</span>
@@ -50,11 +49,11 @@
         <div class="stats-grid">
             <div class="card">
                 <h3>Kecepatan Arus</h3>
-                <div class="big-number" id="live-vel">0.00 <small>m/s</small></div>
+                <div class="big-number" id="live-vel">- <small>m/s</small></div>
             </div>
             <div class="card">
                 <h3>Estimasi Debit</h3>
-                <div class="big-number" id="live-dis">0.00 <small>m³/s</small></div>
+                <div class="big-number" id="live-dis">- <small>m³/s</small></div>
             </div>
             <div class="card" id="alert-card">
                 <h3>Status Banjir</h3>
