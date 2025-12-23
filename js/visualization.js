@@ -39,49 +39,37 @@ const elFreq = document.getElementById('val-freq');
 const elSnr = document.getElementById('val-snr');
 
 // ==========================================
-// 1. TOGGLE LOGIC
+// 1. TOGGLE LOGIC & INITIAL SETUP
 // ==========================================
+
+// [BARU] Fungsi untuk update teks status
+function updateStatusText() {
+    if (isSimulation) {
+        currentDeviceId = DEVICE_ID_SIM;
+        modeDesc.innerHTML = `Mode: <strong>SIMULATION</strong>. Menampilkan data dari 'simulation-sender.py' (ID: ${DEVICE_ID_SIM})`;
+        modeDesc.style.color = "#e65100";
+    } else {
+        currentDeviceId = DEVICE_ID_REAL;
+        modeDesc.innerHTML = `Mode: <strong>REAL SITE</strong>. Menampilkan data dari 'main_pi.py' (ID: ${DEVICE_ID_REAL})`;
+        modeDesc.style.color = "#525f7f";
+    }
+}
+
+// [BARU] Jalankan fungsi ini SATU KALI saat awal load
+if (modeDesc) {
+    updateStatusText();
+}
+
+// Event Listener saat tombol digeser
 if (toggleBtn) {
     toggleBtn.addEventListener('change', (e) => {
         isSimulation = e.target.checked;
-        if (isSimulation) {
-            currentDeviceId = DEVICE_ID_SIM;
-            modeDesc.innerHTML = `Mode: <strong>SIMULATION</strong>. Menampilkan data dari 'simulation-sender.py' (ID: ${DEVICE_ID_SIM})`;
-            modeDesc.style.color = "#e65100";
-        } else {
-            currentDeviceId = DEVICE_ID_REAL;
-            modeDesc.innerHTML = `Mode: <strong>REAL SITE</strong>. Menampilkan data dari 'main_pi.py' (ID: ${DEVICE_ID_REAL})`;
-            modeDesc.style.color = "#525f7f";
-        }
+        
+        // Panggil fungsi update teks
+        updateStatusText();
+
         resetCharts();
         fetchData(); 
-    });
-}
-
-function resetCharts() {
-    [chartInstance, chartMag, chartPhase, chartComplex, chartDoppler].forEach(c => {
-        if(c) {
-            c.data.labels = [];
-            c.data.datasets.forEach(ds => ds.data = []);
-            c.update();
-        }
-    });
-}
-
-// Tech Dashboard Toggle
-if (techBtn) {
-    techBtn.addEventListener('click', () => {
-        if (techDashboard.style.display === 'none' || techDashboard.style.display === '') {
-            techDashboard.style.display = 'grid';
-            techBtn.textContent = "❌ Sembunyikan Analisis Sinyal";
-            // Trigger resize agar chart pas
-            setTimeout(() => {
-                [chartMag, chartPhase, chartComplex, chartDoppler].forEach(c => c?.resize());
-            }, 100);
-        } else {
-            techDashboard.style.display = 'none';
-            techBtn.textContent = "🛠️ Tampilkan Analisis Sinyal Lengkap (Debug Mode)";
-        }
     });
 }
 
