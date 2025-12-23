@@ -15,6 +15,7 @@
             <a href="index.html" class="logo">SERABI - Radar Monitoring</a>
             <ul class="nav-links">
                 <li><a href="index.html">Beranda</a></li>
+                <li><a href="public_dashboard.html">Dashboard Publik</a></li>
                 <li><a href="visualization.html" class="active">Visualisasi</a></li>
                 <li><a href="login.html" class="btn-login">Login</a></li>
             </ul>
@@ -26,7 +27,7 @@
         <div class="mode-selector-card">
             <div class="mode-text">
                 <h3>Sumber Data</h3>
-                <p id="mode-desc">Menunggu data...</p>
+                <p id="mode-desc">Menunggu inisialisasi...</p>
             </div>
             <div class="toggle-wrapper">
                 <span class="toggle-label">REAL SITE</span>
@@ -38,58 +39,40 @@
             </div>
         </div>
 
-        <div class="summary-banner">
-            <div class="summary-item">
-                <span class="label">Exact Index</span>
-                <span class="value" id="val-index">-</span>
-            </div>
-            <div class="summary-item">
-                <span class="label">Tinggi (m)</span>
-                <span class="value" id="val-tinggi">-</span>
-            </div>
-            <div class="summary-item">
-                <span class="label">Freq (Hz)</span>
-                <span class="value" id="val-freq">-</span>
-            </div>
-            <div class="summary-item">
-                <span class="label">Vel (m/s)</span>
-                <span class="value" id="val-vel">-</span>
-            </div>
-            <div class="summary-item">
-                <span class="label">SNR (dB)</span>
-                <span class="value" id="val-snr">-</span>
-            </div>
-            <div class="summary-item">
-                <span class="label">Chirp Rate</span>
-                <span class="value" id="val-chirp">-</span>
-            </div>
+        <div class="summary-banner" style="display: flex; justify-content: space-between; background: #fff; padding: 15px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #ddd;">
+            <div style="text-align: center;"><small style="color:#666; font-weight:bold;">Exact Index</small><br><strong id="val-index" style="font-size:1.1rem">-</strong></div>
+            <div style="text-align: center;"><small style="color:#666; font-weight:bold;">Tinggi (m)</small><br><strong id="val-tinggi" style="font-size:1.1rem">-</strong></div>
+            <div style="text-align: center;"><small style="color:#666; font-weight:bold;">Freq (Hz)</small><br><strong id="val-freq" style="font-size:1.1rem">-</strong></div>
+            <div style="text-align: center;"><small style="color:#666; font-weight:bold;">Vel (m/s)</small><br><strong id="val-vel" style="font-size:1.1rem">-</strong></div>
+            <div style="text-align: center;"><small style="color:#666; font-weight:bold;">SNR (dB)</small><br><strong id="val-snr" style="font-size:1.1rem">-</strong></div>
         </div>
 
-        <div id="tech-dashboard" class="charts-grid-2x2">
+        <div id="tech-dashboard" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
             
-            <div class="card chart-box">
-                <h4>1. Komponen A: History Magnitudo</h4>
-                <div class="canvas-wrapper">
+            <div class="card tech-card" style="padding: 10px;">
+                <h4 style="font-size: 0.9rem; text-align: center; margin-bottom: 10px;">1. Komponen A: History Magnitudo</h4>
+                <div class="tech-chart-box" style="height: 250px;">
                     <canvas id="chartMag"></canvas>
                 </div>
             </div>
 
-            <div class="card chart-box">
-                <h4>2. Komponen B: History Fasa</h4>
-                <div class="canvas-wrapper">
+            <div class="card tech-card" style="padding: 10px;">
+                <h4 style="font-size: 0.9rem; text-align: center; margin-bottom: 10px;">2. Komponen B: History Fasa</h4>
+                <div class="tech-chart-box" style="height: 250px;">
                     <canvas id="chartPhase"></canvas>
                 </div>
             </div>
 
-            <div class="card chart-box">
-                <h4>3. Sinyal Kompleks Gabungan (Input FFT 2)</h4>
-                <div class="canvas-wrapper">
-                    <canvas id="chartRaw"></canvas> </div>
+            <div class="card tech-card" style="padding: 10px;">
+                <h4 style="font-size: 0.9rem; text-align: center; margin-bottom: 10px;">3. Sinyal Kompleks Gabungan (Input FFT 2)</h4>
+                <div class="tech-chart-box" style="height: 250px;">
+                    <canvas id="chartKompleks"></canvas>
+                </div>
             </div>
 
-            <div class="card chart-box">
-                <h4>4. Spektrum Doppler (Hasil FFT 2)</h4>
-                <div class="canvas-wrapper">
+            <div class="card tech-card" style="padding: 10px;">
+                <h4 style="font-size: 0.9rem; text-align: center; margin-bottom: 10px;">4. Spektrum Doppler (Hasil FFT 2)</h4>
+                <div class="tech-chart-box" style="height: 250px;">
                     <canvas id="chartDoppler"></canvas>
                 </div>
             </div>
@@ -97,15 +80,9 @@
 
         <div class="card chart-card" style="margin-top: 20px;">
             <h3>Monitoring Real-Time (Live Trend)</h3>
-            <div class="chart-container" style="height: 250px;">
+            <div class="chart-container" style="height: 200px;">
                 <canvas id="realtimeChart"></canvas>
             </div>
-        </div>
-
-        <div style="text-align: center; margin: 40px 0 20px;">
-            <button id="techToggleBtn" class="btn-tech" style="display:none;">
-                Toggle View
-            </button>
         </div>
 
     </div>
