@@ -1,10 +1,10 @@
 import { supabase } from './supabase.js';
 
 // --- CONFIG ---
-const REAL_DEVICE_ID = 6; // HARUS SAMA DENGAN PYTHON
+const REAL_DEVICE_ID = 6; // Target Device ID dari Python
+const TABLE_NAME = 'sensor_readings'; // <--- NAMA TABEL YANG BENAR
 let isSimulation = false;
 let updateInterval;
-const MAX_DATA_POINTS = 50; 
 
 // Instance Chart
 let chartInstance = null; // Main Chart (Live Trend)
@@ -48,6 +48,7 @@ if (toggleBtn) {
             chartInstance.data.datasets.forEach(ds => ds.data = []);
             chartInstance.update();
         }
+        fetchData(); // Refresh immediate
         startLoop();
     });
 }
@@ -76,39 +77,43 @@ async function fetchData() {
         // --- MODE SIMULASI (Dummy Generator) ---
         generateDummyData();
     } else {
-        // --- MODE REAL SITE (Supabase Device 6) ---
+        // --- MODE REAL SITE (Supabase) ---
         try {
-            // Ambil 1 data terbaru untuk angka-angka detail
-            const { data: latestData, error } = await supabase
-                .from('sensor_readings')
+            // 1. Ambil 1 data terbaru untuk angka-angka detail
+            const { data: latestData, error: errLatest } = await supabase
+                .from(TABLE_NAME) // <--- PAKE VARIABLE TABLE_NAME
                 .select('*')
-                .eq('device_id', REAL_DEVICE_ID) // FILTER DEVICE ID 6
+                .eq('device_id', REAL_DEVICE_ID)
                 .order('timestamp', { ascending: false })
                 .limit(1);
 
-            if (error) throw error;
+            if (errLatest) throw errLatest;
 
-            // Ambil history untuk grafik trend
-            const { data: historyData } = await supabase
-                .from('sensor_readings')
+            // 2. Ambil history untuk grafik trend (20 data terakhir)
+            const { data: historyData, error: errHist } = await supabase
+                .from(TABLE_NAME) // <--- PAKE VARIABLE TABLE_NAME
                 .select('timestamp, velocity, discharge')
                 .eq('device_id', REAL_DEVICE_ID)
                 .order('timestamp', { ascending: false })
                 .limit(20);
 
+            if (errHist) throw errHist;
+
+            // Update UI jika ada data
             if (latestData && latestData.length > 0) {
                 const row = latestData[0];
-                updateUI(row.velocity, row.discharge, row.water_level); // Asumsi water_level ada
+                // Asumsi row.water_level ada, jika tidak pakai 0
+                updateUI(row.velocity, row.discharge, row.water_level || 0); 
                 
                 // Update Tech Charts jika ada raw_json
                 if (row.raw_json) {
                     updateTechnicalCharts(row.raw_json);
                 } else {
-                    // Jika data real tidak punya raw_json, tampilkan garis datar atau dummy halus
+                    // Jika data real tidak punya raw_json, tampilkan dummy halus
                     generateDummyTechData(); 
                 }
             } else {
-                if(modeDesc) modeDesc.innerHTML = `Mode: <strong>REAL SITE</strong>. Menunggu data masuk (ID: ${REAL_DEVICE_ID})...`;
+                if(modeDesc) modeDesc.innerHTML = `Mode: <strong>REAL SITE</strong>. Menunggu data (ID: ${REAL_DEVICE_ID})... Tabel: ${TABLE_NAME}`;
             }
 
             if (historyData) {
@@ -116,22 +121,20 @@ async function fetchData() {
             }
 
         } catch (err) {
-            console.error("Fetch Error:", err);
+            console.error("Fetch Error:", err.message);
+            if(modeDesc) modeDesc.innerText = `Error: ${err.message}`;
         }
     }
 }
 
 // --- FUNGSI GENERATOR DUMMY (SIMULASI) ---
 function generateDummyData() {
-    // Generate angka acak
     const simVel = (Math.random() * 2).toFixed(3);
     const simDis = (simVel * 15).toFixed(2);
     const simLevel = (0.5 + Math.random() * 0.1).toFixed(2);
 
-    // Update UI Angka
     updateUI(simVel, simDis, simLevel);
 
-    // Update Main Chart (Push data manual)
     const now = new Date().toLocaleTimeString('id-ID');
     if (chartInstance) {
         chartInstance.data.labels.push(now);
@@ -144,8 +147,6 @@ function generateDummyData() {
         }
         chartInstance.update('none');
     }
-
-    // Update Tech Charts (Gelombang Sinus Acak)
     generateDummyTechData();
 }
 
@@ -158,7 +159,7 @@ function generateDummyTechData() {
         raw_q: dummyArr.map(x => x + 20),
         range_fft: dummyArr,
         mag_history: dummyArr,
-        phase_history: dummyArr.map(x => (x/50)-1), // Kecilkan range untuk fase
+        phase_history: dummyArr.map(x => (x/50)-1),
         doppler_spec: dummySpec
     };
     updateTechnicalCharts(dummyJson);
@@ -168,14 +169,13 @@ function generateDummyTechData() {
 // 3. UI UPDATER
 // ==========================================
 function updateUI(vel, dis, level) {
-    // Update KPI Besar
     if(velDisplay) velDisplay.innerHTML = `${Number(vel).toFixed(3)} <small>m/s</small>`;
     if(disDisplay) disDisplay.innerHTML = `${Number(dis).toFixed(2)} <small>m³/s</small>`;
 
-    // Update Summary Banner (Baris Atas)
-    if(elIndex) elIndex.textContent = (Math.random() + 1).toFixed(4); // Dummy Index
-    if(elTinggi) elTinggi.textContent = level || "-";
-    if(elFreq) elFreq.textContent = (Number(vel) * 50).toFixed(2); // Estimasi Freq
+    // Update Summary Banner
+    if(elIndex) elIndex.textContent = (Math.random() + 1).toFixed(4); // Dummy Index (karena tidak ada di DB)
+    if(elTinggi) elTinggi.textContent = Number(level).toFixed(2);
+    if(elFreq) elFreq.textContent = (Number(vel) * 50).toFixed(2); // Estimasi
     if(elSnr) elSnr.textContent = (10 + Math.random() * 5).toFixed(2);
 
     // Update Status
@@ -235,26 +235,22 @@ function updateMainChart(data) {
 
 // B. Technical Charts Updater
 function updateTechnicalCharts(json) {
-    // 1. Raw Signal
+    if(!json) return;
     renderLineChart('chartRaw', chartRaw, c => chartRaw = c, ['I', 'Q'], [json.raw_i, json.raw_q], ['blue', 'red']);
-    // 2. Range FFT
     renderFilledChart('chartRange', chartRange, c => chartRange = c, 'Magnitudo', json.range_fft, 'green');
-    // 3. Mag History
     renderLineChart('chartMag', chartMag, c => chartMag = c, ['History'], [json.mag_history], ['#2d8a38']);
-    // 4. Phase History
     renderLineChart('chartPhase', chartPhase, c => chartPhase = c, ['Fasa'], [json.phase_history], ['magenta'], {min:-3.5, max:3.5});
-    // 5. Doppler
     renderFilledChart('chartDoppler', chartDoppler, c => chartDoppler = c, 'Spectrum', json.doppler_spec, 'black');
 }
 
 // --- Helper Chart Functions ---
 function renderLineChart(id, chartObj, setChart, labels, dataArr, colors, yOpt) {
     const ctx = document.getElementById(id)?.getContext('2d');
-    if (!ctx || !dataArr[0]) return;
+    if (!ctx || !dataArr || !dataArr[0]) return;
     const xAxis = Array.from({length: dataArr[0].length}, (_,i)=>i);
 
     if (chartObj) {
-        dataArr.forEach((d, i) => chartObj.data.datasets[i].data = d);
+        dataArr.forEach((d, i) => { if(chartObj.data.datasets[i]) chartObj.data.datasets[i].data = d; });
         chartObj.update('none');
     } else {
         const datasets = labels.map((l, i) => ({
@@ -288,5 +284,6 @@ function startLoop() {
     updateInterval = setInterval(fetchData, 1000); // 1 Detik Refresh Rate
 }
 
-startLoop();
+// Start
 fetchData();
+startLoop();
