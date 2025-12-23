@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualisasi Radar - SERABI</title>
+    <title>Advanced Visualization - SERABI</title>
     <link rel="stylesheet" href="css/style.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -39,53 +40,82 @@
             </div>
         </div>
 
-        <div class="summary-banner" style="display: flex; justify-content: space-between; background: #fff; padding: 15px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #ddd;">
-            <div style="text-align: center;"><small style="color:#666; font-weight:bold;">Exact Index</small><br><strong id="val-index" style="font-size:1.1rem">-</strong></div>
-            <div style="text-align: center;"><small style="color:#666; font-weight:bold;">Tinggi (m)</small><br><strong id="val-tinggi" style="font-size:1.1rem">-</strong></div>
-            <div style="text-align: center;"><small style="color:#666; font-weight:bold;">Freq (Hz)</small><br><strong id="val-freq" style="font-size:1.1rem">-</strong></div>
-            <div style="text-align: center;"><small style="color:#666; font-weight:bold;">Vel (m/s)</small><br><strong id="val-vel" style="font-size:1.1rem">-</strong></div>
-            <div style="text-align: center;"><small style="color:#666; font-weight:bold;">SNR (dB)</small><br><strong id="val-snr" style="font-size:1.1rem">-</strong></div>
+        <div class="summary-banner" style="display: flex; justify-content: space-between; background: #fff; padding: 15px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+            <div style="text-align: center;"><small style="color:#888;">Exact Index</small><br><strong id="val-index">-</strong></div>
+            <div style="text-align: center;"><small style="color:#888;">Tinggi (m)</small><br><strong id="val-tinggi">-</strong></div>
+            <div style="text-align: center;"><small style="color:#888;">Freq (Hz)</small><br><strong id="val-freq">-</strong></div>
+            <div style="text-align: center;"><small style="color:#888;">SNR (dB)</small><br><strong id="val-snr">-</strong></div>
         </div>
 
-        <div id="tech-dashboard" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div class="stats-grid">
+            <div class="card">
+                <h3>Kecepatan Arus</h3>
+                <div class="big-number" id="live-vel">0.00 <small>m/s</small></div>
+            </div>
+            <div class="card">
+                <h3>Estimasi Debit</h3>
+                <div class="big-number" id="live-dis">0.00 <small>m³/s</small></div>
+            </div>
+            <div class="card" id="alert-card">
+                <h3>Status Banjir</h3>
+                <div class="status-badge safe" id="flood-status">AMAN</div>
+            </div>
+        </div>
+
+        <div class="card chart-card" style="margin-top: 20px;">
+            <h3>Monitoring Real-Time (Live Trend)</h3>
+            <div class="chart-container" style="height: 300px;">
+                <canvas id="realtimeChart"></canvas>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 40px 0 20px;">
+            <button id="techToggleBtn" class="btn-tech">
+                🛠️ Tampilkan Analisis Sinyal Lengkap (Debug Mode)
+            </button>
+        </div>
+
+        <div id="tech-dashboard" class="tech-grid" style="display: none; grid-template-columns: 1fr 1fr; gap: 15px;">
             
-            <div class="card tech-card" style="padding: 10px;">
-                <h4 style="font-size: 0.9rem; text-align: center; margin-bottom: 10px;">1. Komponen A: History Magnitudo</h4>
+            <div class="card tech-card">
+                <h4 style="font-size: 0.9rem; text-align: center;">1. Komponen A: History Magnitudo</h4>
                 <div class="tech-chart-box" style="height: 250px;">
                     <canvas id="chartMag"></canvas>
                 </div>
             </div>
 
-            <div class="card tech-card" style="padding: 10px;">
-                <h4 style="font-size: 0.9rem; text-align: center; margin-bottom: 10px;">2. Komponen B: History Fasa</h4>
+            <div class="card tech-card">
+                <h4 style="font-size: 0.9rem; text-align: center;">2. Komponen B: History Fasa</h4>
                 <div class="tech-chart-box" style="height: 250px;">
                     <canvas id="chartPhase"></canvas>
                 </div>
             </div>
 
-            <div class="card tech-card" style="padding: 10px;">
-                <h4 style="font-size: 0.9rem; text-align: center; margin-bottom: 10px;">3. Sinyal Kompleks Gabungan (Input FFT 2)</h4>
+            <div class="card tech-card">
+                <h4 style="font-size: 0.9rem; text-align: center;">3. Sinyal Kompleks Gabungan (Input FFT 2)</h4>
                 <div class="tech-chart-box" style="height: 250px;">
-                    <canvas id="chartKompleks"></canvas>
+                    <canvas id="chartComplex"></canvas>
                 </div>
             </div>
 
-            <div class="card tech-card" style="padding: 10px;">
-                <h4 style="font-size: 0.9rem; text-align: center; margin-bottom: 10px;">4. Spektrum Doppler (Hasil FFT 2)</h4>
+            <div class="card tech-card">
+                <h4 style="font-size: 0.9rem; text-align: center;">4. Spektrum Doppler (Hasil FFT 2)</h4>
                 <div class="tech-chart-box" style="height: 250px;">
                     <canvas id="chartDoppler"></canvas>
                 </div>
             </div>
         </div>
 
-        <div class="card chart-card" style="margin-top: 20px;">
-            <h3>Monitoring Real-Time (Live Trend)</h3>
-            <div class="chart-container" style="height: 200px;">
-                <canvas id="realtimeChart"></canvas>
+    </div>
+
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-col">
+                <h3 class="footer-brand">SERABI</h3>
+                <p class="footer-desc">Sistem Estimasi Debit Air Sungai Berbasis Radar.</p>
             </div>
         </div>
-
-    </div>
+    </footer>
 
     <script type="module" src="js/visualization.js"></script>
 </body>

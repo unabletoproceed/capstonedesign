@@ -1,30 +1,41 @@
-import { supabase } from './supabase.js';
+// ==========================================
+// KONFIGURASI SUPABASE
+// ==========================================
+const SUPABASE_URL = "https://ohbpqbhphpdlqzdnvtov.supabase.co"; 
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9oYnBxYmhwaHBkbHF6ZG52dG92Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM2ODM0MTIsImV4cCI6MjA3OTI1OTQxMn0.wh_4j201Ci6C3cR-gCnwwe6mt3hyS_BAqs_7mExezqY";
+
+// Inisialisasi Client (Menggunakan library dari CDN di HTML)
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // --- CONFIG ---
-const REAL_DEVICE_ID = 6;  
-const SIM_DEVICE_ID = 99;  
+const DEVICE_ID_REAL = 6;  
+const DEVICE_ID_SIM  = 99; 
 const TABLE_NAME = 'sensor_readings';
 
 let isSimulation = false;
-let currentDeviceId = REAL_DEVICE_ID;
+let currentDeviceId = DEVICE_ID_REAL;
 let updateInterval;
 
 // Instance Chart
-let chartInstance = null; // Trend Chart
-let chartMag = null;      // 1. Hijau
-let chartPhase = null;    // 2. Ungu
-let chartKompleks = null; // 3. Biru/Kuning
-let chartDoppler = null;  // 4. Hitam
+let chartInstance = null; // Main Trend
+let chartMag = null;
+let chartPhase = null;
+let chartComplex = null;
+let chartDoppler = null;
 
 // DOM Elements
 const toggleBtn = document.getElementById('simToggle');
 const modeDesc = document.getElementById('mode-desc');
+const velDisplay = document.getElementById('live-vel');
+const disDisplay = document.getElementById('live-dis');
+const floodStatus = document.getElementById('flood-status');
+const techBtn = document.getElementById('techToggleBtn');
+const techDashboard = document.getElementById('tech-dashboard');
 
-// Summary Banner Elements
+// Summary Banner
 const elIndex = document.getElementById('val-index');
 const elTinggi = document.getElementById('val-tinggi');
 const elFreq = document.getElementById('val-freq');
-const elVel = document.getElementById('val-vel');
 const elSnr = document.getElementById('val-snr');
 
 // ==========================================
@@ -34,29 +45,44 @@ if (toggleBtn) {
     toggleBtn.addEventListener('change', (e) => {
         isSimulation = e.target.checked;
         if (isSimulation) {
-            currentDeviceId = SIM_DEVICE_ID;
-            modeDesc.innerHTML = `Mode: <strong>SIMULATION</strong>. Menampilkan data dari Python Sender (ID: ${SIM_DEVICE_ID})`;
+            currentDeviceId = DEVICE_ID_SIM;
+            modeDesc.innerHTML = `Mode: <strong>SIMULATION</strong>. Menampilkan data dari 'simulation-sender.py' (ID: ${DEVICE_ID_SIM})`;
             modeDesc.style.color = "#e65100";
         } else {
-            currentDeviceId = REAL_DEVICE_ID;
-            modeDesc.innerHTML = `Mode: <strong>REAL SITE</strong>. Menampilkan data Lapangan (ID: ${REAL_DEVICE_ID})`;
+            currentDeviceId = DEVICE_ID_REAL;
+            modeDesc.innerHTML = `Mode: <strong>REAL SITE</strong>. Menampilkan data dari 'main_pi.py' (ID: ${DEVICE_ID_REAL})`;
             modeDesc.style.color = "#525f7f";
         }
-        resetCharts(); // Kosongkan grafik saat ganti mode
-        fetchData();   // Ambil data baru
+        resetCharts();
+        fetchData(); 
     });
 }
 
 function resetCharts() {
-    [chartInstance, chartMag, chartPhase, chartKompleks, chartDoppler].forEach(chart => {
-        if(chart) {
-            chart.data.labels = [];
-            chart.data.datasets.forEach(ds => ds.data = []);
-            chart.update();
+    [chartInstance, chartMag, chartPhase, chartComplex, chartDoppler].forEach(c => {
+        if(c) {
+            c.data.labels = [];
+            c.data.datasets.forEach(ds => ds.data = []);
+            c.update();
         }
     });
-    // Reset angka
-    [elIndex, elTinggi, elFreq, elVel, elSnr].forEach(el => el.textContent = "-");
+}
+
+// Tech Dashboard Toggle
+if (techBtn) {
+    techBtn.addEventListener('click', () => {
+        if (techDashboard.style.display === 'none' || techDashboard.style.display === '') {
+            techDashboard.style.display = 'grid';
+            techBtn.textContent = "❌ Sembunyikan Analisis Sinyal";
+            // Trigger resize agar chart pas
+            setTimeout(() => {
+                [chartMag, chartPhase, chartComplex, chartDoppler].forEach(c => c?.resize());
+            }, 100);
+        } else {
+            techDashboard.style.display = 'none';
+            techBtn.textContent = "🛠️ Tampilkan Analisis Sinyal Lengkap (Debug Mode)";
+        }
+    });
 }
 
 // ==========================================
@@ -64,86 +90,108 @@ function resetCharts() {
 // ==========================================
 async function fetchData() {
     try {
-        // Ambil 1 data terbaru (termasuk JSON array besar)
-        const { data: latestData, error } = await supabase
+        // 1. Ambil Data Terbaru (KPI & Sinyal)
+        const { data: latest, error: errLatest } = await supabase
             .from(TABLE_NAME)
             .select('*')
             .eq('device_id', currentDeviceId)
             .order('timestamp', { ascending: false })
             .limit(1);
 
-        if (error) throw error;
+        if (errLatest) throw errLatest;
 
-        // Ambil 50 data history untuk trend bawah
-        const { data: historyData } = await supabase
+        // 2. Ambil History untuk Trend (20 data)
+        const { data: history, error: errHist } = await supabase
             .from(TABLE_NAME)
             .select('timestamp, velocity, discharge')
             .eq('device_id', currentDeviceId)
             .order('timestamp', { ascending: false })
-            .limit(50);
+            .limit(20);
+
+        if (errHist) throw errHist;
 
         // --- UPDATE UI ---
-        if (latestData && latestData.length > 0) {
-            const row = latestData[0];
-            updateBanner(row);
+        if (latest && latest.length > 0) {
+            const row = latest[0];
+            updateUI(row);
             
-            // PENTING: Update grafik 4 kotak hanya jika ada raw_json
-            if (row.raw_json) {
-                updateWindowsCharts(row.raw_json);
+            // Render Tech Charts jika JSON ada
+            // PERBAIKAN: Python menyimpan di signal_analysis
+            if (row.raw_json && row.raw_json.signal_analysis) {
+                renderTechCharts(row.raw_json.signal_analysis);
             }
-        } 
+        } else {
+            // Data kosong
+            updateUI(null); 
+        }
 
-        if (historyData && historyData.length > 0) {
-            updateTrendChart(historyData.reverse());
+        if (history && history.length > 0) {
+            updateTrendChart(history.reverse());
         }
 
     } catch (err) {
-        console.error("Fetch Error:", err.message);
+        console.error("Fetch Error:", err);
     }
 }
 
 // ==========================================
-// 3. UI & CHART UPDATERS
+// 3. UI UPDATER
+// ==========================================
+function updateUI(row) {
+    if (!row) {
+        velDisplay.innerHTML = "-";
+        disDisplay.innerHTML = "-";
+        return;
+    }
+
+    velDisplay.innerHTML = `${Number(row.velocity).toFixed(3)} <small>m/s</small>`;
+    disDisplay.innerHTML = `${Number(row.discharge).toFixed(3)} <small>m³/s</small>`;
+
+    // Banner Data
+    const json = row.raw_json || {};
+    elIndex.textContent = json.chirp_count ? json.chirp_count : "-"; // Contoh mapping lain
+    elTinggi.textContent = row.water_level ? Number(row.water_level).toFixed(2) : "-";
+    elFreq.textContent = json.sampling_rate_hz ? json.sampling_rate_hz.toFixed(1) : "-";
+    elSnr.textContent = "-"; // Python script belum kirim SNR spesifik
+
+    // Status Banjir
+    if(floodStatus) {
+        if (row.water_level > 2.0) { // Logika status berdasarkan Tinggi Air
+            floodStatus.textContent = "BAHAYA";
+            floodStatus.className = "status-badge danger";
+            floodStatus.style.backgroundColor = "#f5365c";
+        } else {
+            floodStatus.textContent = "AMAN";
+            floodStatus.className = "status-badge safe";
+            floodStatus.style.backgroundColor = "#2dce89";
+        }
+    }
+}
+
+// ==========================================
+// 4. CHART RENDERERS
 // ==========================================
 
-function updateBanner(row) {
-    const json = row.raw_json || {};
-    // Prioritas ambil dari JSON jika ada (lebih akurat dari python), kalau tidak dari kolom biasa
-    elIndex.textContent = json.peak_index ? json.peak_index.toFixed(4) : "-";
-    elTinggi.textContent = row.water_level ? Number(row.water_level).toFixed(2) : "-";
-    elFreq.textContent = json.doppler_freq ? json.doppler_freq.toFixed(2) : "-";
-    elVel.textContent = row.velocity ? Number(row.velocity).toFixed(4) : "-";
-    elSnr.textContent = json.snr ? json.snr.toFixed(2) : "-";
-}
+const commonOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false,
+    elements: { point: { radius: 0 }, line: { borderWidth: 1.5, tension: 0.1 } },
+    scales: {
+        x: { grid: { display: true, color: '#f0f0f0' }, ticks: { display: true } },
+        y: { grid: { display: true, color: '#f0f0f0' } }
+    },
+    plugins: { legend: { display: false } }
+};
 
-// Render 4 Grafik Ala Windows
-function updateWindowsCharts(json) {
-    if(!json) return;
-
-    // 1. MAGNITUDO (Hijau)
-    renderLineChart('chartMag', chartMag, c => chartMag = c, 
-        ['Magnitudo'], [json.mag_history], ['#2d8a38']); // Hijau Tua
-
-    // 2. FASA (Ungu) - Range Y fix -3 s/d 3
-    renderLineChart('chartPhase', chartPhase, c => chartPhase = c, 
-        ['Fasa'], [json.phase_history], ['#9c27b0'], {min:-3.5, max:3.5});
-
-    // 3. KOMPLEKS (Biru & Kuning)
-    // Asumsi json mengirim raw_i dan raw_q
-    renderLineChart('chartKompleks', chartKompleks, c => chartKompleks = c, 
-        ['Real (I)', 'Imag (Q)'], [json.raw_i, json.raw_q], ['#00bcd4', '#ffc107']);
-
-    // 4. DOPPLER (Hitam)
-    renderLineChart('chartDoppler', chartDoppler, c => chartDoppler = c, 
-        ['Spectrum'], [json.doppler_spec], ['#000000']);
-}
-
+// A. Main Trend Chart
 function updateTrendChart(data) {
     const ctx = document.getElementById('realtimeChart')?.getContext('2d');
     if (!ctx) return;
 
     const labels = data.map(d => new Date(d.timestamp).toLocaleTimeString('id-ID'));
     const velData = data.map(d => d.velocity);
+    // const disData = data.map(d => d.discharge); // Opsional: Tampilkan 1 garis saja biar rapi
 
     if (chartInstance) {
         chartInstance.data.labels = labels;
@@ -154,45 +202,88 @@ function updateTrendChart(data) {
             type: 'line',
             data: {
                 labels: labels,
-                datasets: [{ label: 'Kecepatan Arus (m/s)', data: velData, borderColor: '#3498db', backgroundColor: 'rgba(52, 152, 219, 0.1)', fill: true, pointRadius: 0 }]
+                datasets: [
+                    { label: 'Kecepatan (m/s)', data: velData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true }
+                ]
             },
-            options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { x: { display: false } } }
+            options: commonOptions
         });
     }
 }
 
-// Helper Chart
-function renderLineChart(id, chartObj, setChart, labels, dataArr, colors, yOpt) {
+// B. Tech Charts (The 4 Grids)
+function renderTechCharts(signals) {
+    // PERBAIKAN: Menggunakan nama key yang sesuai dengan main_pi.py
+    
+    // 1. MAGNITUDO (HIJAU)
+    renderSingleLine('chartMag', chartMag, c => chartMag = c, signals.magnitude_history, '#2d8a38');
+
+    // 2. FASA (UNGU)
+    renderSingleLine('chartPhase', chartPhase, c => chartPhase = c, signals.phase_history, '#9c27b0', {min: -3.5, max: 3.5});
+
+    // 3. KOMPLEKS (KOSONG/DUMMY) 
+    // Karena Python tidak mengirim raw I/Q (untuk hemat bandwidth), kita tampilkan garis nol
+    const dummyZero = new Array(128).fill(0);
+    renderComplexChart('chartComplex', chartComplex, c => chartComplex = c, dummyZero, dummyZero);
+
+    // 4. DOPPLER (HITAM)
+    renderSingleLine('chartDoppler', chartDoppler, c => chartDoppler = c, signals.doppler_spectrum, '#000000');
+}
+
+// Helper: Grafik 1 Garis
+function renderSingleLine(id, chartObj, setChart, dataArr, color, yScaleOpt = {}) {
     const ctx = document.getElementById(id)?.getContext('2d');
-    if (!ctx || !dataArr || !dataArr[0]) return;
-    const xAxis = Array.from({length: dataArr[0].length}, (_,i)=>i);
+    if (!ctx || !dataArr) return;
+    const xAxis = Array.from({length: dataArr.length}, (_, i) => i);
 
     if (chartObj) {
-        dataArr.forEach((d, i) => { if(chartObj.data.datasets[i]) chartObj.data.datasets[i].data = d; });
+        chartObj.data.labels = xAxis;
+        chartObj.data.datasets[0].data = dataArr;
         chartObj.update('none');
     } else {
-        const datasets = labels.map((l, i) => ({
-            label: l, data: dataArr[i], borderColor: colors[i], borderWidth: 1.2, pointRadius: 0, fill: false
-        }));
-        const opts = { 
-            responsive: true, 
-            maintainAspectRatio: false,
-            animation: false, 
-            plugins:{legend:{display: labels.length > 1}}, // Tampilkan legend cuma kalau dataset > 1
-            scales:{
-                x:{display:true, grid:{color:'#f0f0f0'}}, 
-                y:{display:true, grid:{color:'#f0f0f0'}, ...yOpt}
+        const config = {
+            type: 'line',
+            data: {
+                labels: xAxis,
+                datasets: [{ data: dataArr, borderColor: color, borderWidth: 1.2, fill: false }]
             },
-            elements: { line: { tension: 0 } } // Garis tajam (bukan curve)
+            options: { ...commonOptions, scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, ...yScaleOpt } } }
         };
-        setChart(new Chart(ctx, { type: 'line', data: { labels: xAxis, datasets }, options: opts }));
+        setChart(new Chart(ctx, config));
     }
 }
 
-// Loop 2 detik sekali (Cukup untuk real-site yg update 1 menit)
+// Helper: Grafik Kompleks
+function renderComplexChart(id, chartObj, setChart, realArr, imagArr) {
+    const ctx = document.getElementById(id)?.getContext('2d');
+    if (!ctx) return;
+    const xAxis = Array.from({length: realArr.length}, (_, i) => i);
+
+    if (chartObj) {
+        chartObj.data.datasets[0].data = realArr;
+        chartObj.data.datasets[1].data = imagArr;
+        chartObj.update('none');
+    } else {
+        const config = {
+            type: 'line',
+            data: {
+                labels: xAxis,
+                datasets: [
+                    { label: 'Real', data: realArr, borderColor: '#00bcd4', borderWidth: 1 }, 
+                    { label: 'Imag', data: imagArr, borderColor: '#ffc107', borderWidth: 1 }  
+                ]
+            },
+            options: { ...commonOptions, plugins: { legend: { display: true } } }
+        };
+        setChart(new Chart(ctx, config));
+    }
+}
+
+// --- LOOP CONTROL ---
 function startLoop() {
     if (updateInterval) clearInterval(updateInterval);
-    updateInterval = setInterval(fetchData, 2000); 
+    // Refresh setiap 5 detik (Cukup karena data masuk tiap 60 detik)
+    updateInterval = setInterval(fetchData, 5000); 
 }
 
 // Start
