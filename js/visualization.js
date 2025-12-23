@@ -1,7 +1,7 @@
 import { supabase } from './supabase.js';
 
 // --- CONFIG ---
-const REAL_DEVICE_ID = 6; // TARGET ID
+const REAL_DEVICE_ID = 6; // HARUS SAMA DENGAN PYTHON
 let isSimulation = false;
 let updateInterval;
 const MAX_DATA_POINTS = 50; 
@@ -107,6 +107,8 @@ async function fetchData() {
                     // Jika data real tidak punya raw_json, tampilkan garis datar atau dummy halus
                     generateDummyTechData(); 
                 }
+            } else {
+                if(modeDesc) modeDesc.innerHTML = `Mode: <strong>REAL SITE</strong>. Menunggu data masuk (ID: ${REAL_DEVICE_ID})...`;
             }
 
             if (historyData) {
