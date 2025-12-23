@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Visualization - SERABI</title>
+    <title>Visualisasi Radar - SERABI</title>
     <link rel="stylesheet" href="css/style.css">
-    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -13,110 +12,96 @@
 
     <nav class="navbar">
         <div class="nav-container">
-            <a href="index.html" class="logo">SERABI</a>
+            <a href="index.html" class="logo">SERABI - Radar Monitoring</a>
             <ul class="nav-links">
                 <li><a href="index.html">Beranda</a></li>
                 <li><a href="public_dashboard.html">Dashboard Publik</a></li>
                 <li><a href="visualization.html" class="active">Visualisasi</a></li>
-                <li><a href="login.html" class="btn-login">Login</a></li>
             </ul>
         </div>
     </nav>
 
-    <div class="dashboard-container">
-
-        <div class="mode-selector-card">
-            <div class="mode-text">
-                <h3>Sumber Data</h3>
-                <p id="mode-desc">Menampilkan data HISTORIS dari sensor lapangan.</p>
+    <main class="viz-container">
+        
+        <div class="control-panel" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd;">
+            <div class="mode-info">
+                <h4 style="margin:0;">Mode Operasi</h4>
+                <p id="mode-desc" style="margin:0; font-size: 0.9rem; color: #666;">Real Site (Data Historis)</p>
             </div>
-            
-            <div class="toggle-wrapper">
-                <span class="toggle-label">REAL SITE</span>
+            <div class="toggle-wrapper" style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 0.85rem; font-weight: bold; color: #555;">REAL</span>
                 <label class="switch">
                     <input type="checkbox" id="simToggle">
                     <span class="slider round"></span>
                 </label>
-                <span class="toggle-label">SIMULATION</span>
+                <span style="font-size: 0.85rem; font-weight: bold; color: #555;">SIMULASI</span>
             </div>
         </div>
 
-        <div class="stats-grid">
-            <div class="card">
-                <h3>Kecepatan Arus</h3>
-                <div class="big-number" id="live-vel">0.00 <small>m/s</small></div>
+        <div class="summary-banner">
+            <div class="summary-item">
+                <span class="label">Status</span>
+                <span class="value" id="val-status" style="color: green;">AMAN</span>
             </div>
-            <div class="card">
-                <h3>Estimasi Debit</h3>
-                <div class="big-number" id="live-dis">0.00 <small>m³/s</small></div>
+            <div class="summary-item">
+                <span class="label">Tinggi Muka Air (m)</span>
+                <span class="value" id="val-tinggi">0.00</span>
             </div>
-            <div class="card" id="alert-card">
-                <h3>Status Banjir</h3>
-                <div class="status-badge safe" id="flood-status">AMAN</div>
+            <div class="summary-item">
+                <span class="label">Kecepatan (m/s)</span>
+                <span class="value" id="val-vel">0.00</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Debit (m³/s)</span>
+                <span class="value" id="val-dis">0.00</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">SNR (dB)</span>
+                <span class="value" id="val-snr">-</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Waktu Update</span>
+                <span class="value" id="val-time" style="font-size: 0.8rem;">-</span>
             </div>
         </div>
 
-        <div class="card chart-card" style="margin-top: 20px;">
-            <h3>Monitoring Real-Time (Live Trend)</h3>
-            <div class="chart-container">
-                <canvas id="realtimeChart"></canvas>
-            </div>
-        </div>
-
-        <div style="text-align: center; margin: 40px 0 20px;">
-            <button id="techToggleBtn" class="btn-tech">
-                🛠️ Tampilkan Analisis Sinyal Lengkap (Debug Mode)
-            </button>
-        </div>
-
-        <div id="tech-dashboard" class="tech-grid" style="display: none;">
-            
-            <div class="card tech-card">
-                <h4>1. Sinyal Mentah (Fast Time)</h4>
-                <div class="tech-chart-box">
-                    <canvas id="chartRaw"></canvas>
-                </div>
-            </div>
-
-            <div class="card tech-card">
-                <h4>2. Range FFT (Posisi Target)</h4>
-                <div class="tech-chart-box">
-                    <canvas id="chartRange"></canvas>
-                </div>
-            </div>
-
-            <div class="card tech-card">
-                <h4>3. History Magnitudo</h4>
-                <div class="tech-chart-box">
+        <div class="charts-grid-2x2">
+            <div class="chart-box">
+                <h3>1. Komponen A: History Magnitudo</h3>
+                <div class="canvas-wrapper">
                     <canvas id="chartMag"></canvas>
                 </div>
             </div>
 
-            <div class="card tech-card">
-                <h4>4. History Fasa (Stabilitas)</h4>
-                <div class="tech-chart-box">
+            <div class="chart-box">
+                <h3>2. Komponen B: History Fasa</h3>
+                <div class="canvas-wrapper">
                     <canvas id="chartPhase"></canvas>
                 </div>
             </div>
 
-            <div class="card tech-card wide-card">
-                <h4>5. Spektrum Doppler (Analisis Kecepatan)</h4>
-                <div class="tech-chart-box">
+            <div class="chart-box">
+                <h3>3. Sinyal Kompleks Gabungan (Input FFT 2)</h3>
+                <div class="canvas-wrapper">
+                    <canvas id="chartRaw"></canvas> </div>
+            </div>
+
+            <div class="chart-box">
+                <h3>4. Spektrum Doppler (Hasil FFT 2)</h3>
+                <div class="canvas-wrapper">
                     <canvas id="chartDoppler"></canvas>
                 </div>
             </div>
         </div>
-
-    </div>
-
-    <footer class="main-footer">
-        <div class="footer-container">
-            <div class="footer-col">
-                <h3 class="footer-brand">SERABI</h3>
-                <p class="footer-desc">Sistem Estimasi Debit Air Sungai Berbasis Radar.</p>
+        
+        <div class="card chart-card" style="margin-top: 20px; border: 1px solid #ddd;">
+            <h3 style="padding: 10px; border-bottom: 1px solid #eee; margin:0;">Monitoring Tren Real-Time</h3>
+            <div class="chart-container" style="height: 300px; padding: 10px;">
+                <canvas id="realtimeChart"></canvas>
             </div>
         </div>
-    </footer>
+
+    </main>
 
     <script type="module" src="js/visualization.js"></script>
 </body>

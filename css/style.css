@@ -1214,3 +1214,77 @@ input:checked + .slider:before { transform: translateX(26px); }
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     aspect-ratio: 16 / 9; /* Keeps the video standard rectangular shape */
 }
+
+/* Container Utama agar lebar maksimal */
+.viz-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 15px 20px;
+}
+
+/* --- STYLE BAR RINGKASAN DATA --- */
+.summary-banner {
+    display: flex;
+    justify-content: space-around;
+    background: #f8f9fa; /* Abu-abu muda mirip windows */
+    padding: 10px 15px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    margin-bottom: 15px;
+}
+
+.summary-item {
+    text-align: center;
+    border-right: 1px solid #ddd;
+    flex: 1; /* Bagi rata lebar */
+}
+.summary-item:last-child { border-right: none; }
+
+.summary-item .label {
+    display: block;
+    font-size: 0.8rem;
+    color: #666;
+    font-weight: 600;
+}
+
+.summary-item .value {
+    display: block;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333;
+}
+
+/* --- STYLE GRID GRAFIK 2x2 --- */
+.charts-grid-2x2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dua kolom sama lebar */
+    gap: 15px; /* Jarak antar kotak */
+}
+
+.chart-box {
+    background: #fff;
+    padding: 10px;
+    border: 1px solid #999; /* Border lebih tegas */
+    border-radius: 2px;
+}
+
+.chart-box h3 {
+    text-align: center;
+    font-size: 0.9rem;
+    margin: 0 0 10px 0;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Wrapper agar canvas ukurannya pas */
+.canvas-wrapper {
+    position: relative;
+    height: 280px; /* Tinggi tetap agar seragam */
+    width: 100%;
+}
+
+/* Responsif: Di HP jadi 1 kolom */
+@media (max-width: 768px) {
+    .summary-banner { flex-wrap: wrap; }
+    .charts-grid-2x2 { grid-template-columns: 1fr; }
+}
