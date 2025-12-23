@@ -93,7 +93,15 @@ function renderTable() {
         
         const dateObj = new Date(row.timestamp);
         // Format ringan agar JS tidak berat processnya
-        const dateStr = dateObj.toLocaleDateString('id-ID') + ' ' + dateObj.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+        const dateStr = dateObj.toLocaleString('id-ID', {
+            timeZone: 'UTC', // <--- KUNCI: Paksa gunakan zona waktu UTC (+0)
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
 
         const vel = row.velocity != null ? row.velocity.toFixed(2) : '-';
         const dis = row.discharge != null ? row.discharge.toFixed(2) : '-';
