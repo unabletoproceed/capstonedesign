@@ -27,7 +27,8 @@ let chartDoppler = null;
 const toggleBtn = document.getElementById('simToggle');
 const modeDesc = document.getElementById('mode-desc');
 const velDisplay = document.getElementById('live-vel');
-const disDisplay = document.getElementById('live-dis');
+// UBAH: Ambil elemen live-wl (Water Level)
+const wlDisplay = document.getElementById('live-wl');
 const floodStatus = document.getElementById('flood-status');
 const techBtn = document.getElementById('techToggleBtn');
 const techDashboard = document.getElementById('tech-dashboard');
@@ -42,7 +43,6 @@ const elSnr = document.getElementById('val-snr');
 // 1. TOGGLE LOGIC & STATUS UI
 // ==========================================
 
-// Fungsi Update Teks Status (Dipisah agar bisa dipanggil saat start)
 function updateStatusUI() {
     if (isSimulation) {
         currentDeviceId = DEVICE_ID_SIM;
@@ -59,13 +59,12 @@ function updateStatusUI() {
     }
 }
 
-// [PENTING] Jalankan fungsi ini SATU KALI saat awal load agar status langsung muncul
 updateStatusUI();
 
 if (toggleBtn) {
     toggleBtn.addEventListener('change', (e) => {
         isSimulation = e.target.checked;
-        updateStatusUI(); // Update teks saat tombol digeser
+        updateStatusUI(); 
         resetCharts();
         fetchData(); 
     });
@@ -81,7 +80,6 @@ function resetCharts() {
     });
 }
 
-// Tech Dashboard Toggle
 if (techBtn) {
     techBtn.addEventListener('click', () => {
         if (techDashboard.style.display === 'none' || techDashboard.style.display === '') {
@@ -112,10 +110,10 @@ async function fetchData() {
 
         if (errLatest) throw errLatest;
 
-        // Ambil History untuk Trend
+        // Ambil History untuk Trend (UBAH: ambil water_level bukan discharge)
         const { data: history, error: errHist } = await supabase
             .from(TABLE_NAME)
-            .select('timestamp, velocity, discharge')
+            .select('timestamp, velocity, water_level') 
             .eq('device_id', currentDeviceId)
             .order('timestamp', { ascending: false })
             .limit(20);
@@ -127,7 +125,6 @@ async function fetchData() {
             const row = latest[0];
             updateUI(row);
             
-            // Cek apakah ada data sinyal di dalam JSON
             if (row.raw_json && row.raw_json.signal_analysis) {
                 renderTechCharts(row.raw_json.signal_analysis);
             } else {
@@ -152,12 +149,13 @@ async function fetchData() {
 function updateUI(row) {
     if (!row) {
         if(velDisplay) velDisplay.innerHTML = "-";
-        if(disDisplay) disDisplay.innerHTML = "-";
+        if(wlDisplay) wlDisplay.innerHTML = "-";
         return;
     }
 
     if(velDisplay) velDisplay.innerHTML = `${Number(row.velocity).toFixed(3)} <small>m/s</small>`;
-    if(disDisplay) disDisplay.innerHTML = `${Number(row.discharge).toFixed(3)} <small>m³/s</small>`;
+    // UBAH: Tampilkan Water Level
+    if(wlDisplay) wlDisplay.innerHTML = `${Number(row.water_level).toFixed(2)} <small>m</small>`;
 
     const json = row.raw_json || {};
     if(elIndex) elIndex.textContent = json.chirp_count ? json.chirp_count : "-";
@@ -166,10 +164,15 @@ function updateUI(row) {
     if(elSnr) elSnr.textContent = "-";
 
     if(floodStatus) {
+        // Logika Status Berdasarkan Tinggi Air
         if (row.water_level > 2.0) {
             floodStatus.textContent = "BAHAYA";
             floodStatus.className = "status-badge danger";
             floodStatus.style.backgroundColor = "#f5365c";
+        } else if (row.water_level > 1.0) {
+            floodStatus.textContent = "SIAGA";
+            floodStatus.className = "status-badge warning";
+            floodStatus.style.backgroundColor = "#fb6340";
         } else {
             floodStatus.textContent = "AMAN";
             floodStatus.className = "status-badge safe";
@@ -190,7 +193,7 @@ const commonOptions = {
         x: { grid: { display: true, color: '#f0f0f0' }, ticks: { display: true } },
         y: { grid: { display: true, color: '#f0f0f0' } }
     },
-    plugins: { legend: { display: false } }
+    plugins: { legend: { display: true, position: 'top' } } // Tampilkan legend karena ada 2 data
 };
 
 function updateTrendChart(data) {
@@ -199,10 +202,12 @@ function updateTrendChart(data) {
 
     const labels = data.map(d => new Date(d.timestamp).toLocaleTimeString('id-ID'));
     const velData = data.map(d => d.velocity);
+    const wlData = data.map(d => d.water_level); // Data Tinggi Air
 
     if (chartInstance) {
         chartInstance.data.labels = labels;
         chartInstance.data.datasets[0].data = velData;
+        chartInstance.data.datasets[1].data = wlData;
         chartInstance.update('none');
     } else {
         chartInstance = new Chart(ctx, {
@@ -210,7 +215,20 @@ function updateTrendChart(data) {
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'Kecepatan (m/s)', data: velData, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true }
+                    { 
+                        label: 'Kecepatan (m/s)', 
+                        data: velData, 
+                        borderColor: '#3b82f6', // Biru
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)', 
+                        fill: false 
+                    },
+                    { 
+                        label: 'Tinggi Air (m)', 
+                        data: wlData, 
+                        borderColor: '#006064', // Hijau Tua/Teal
+                        backgroundColor: 'rgba(0, 96, 100, 0.1)', 
+                        fill: false 
+                    }
                 ]
             },
             options: commonOptions
@@ -245,7 +263,7 @@ function renderSingleLine(id, chartObj, setChart, dataArr, color, yScaleOpt = {}
                 labels: xAxis,
                 datasets: [{ data: dataArr, borderColor: color, borderWidth: 1.2, fill: false }]
             },
-            options: { ...commonOptions, scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, ...yScaleOpt } } }
+            options: { ...commonOptions, scales: { ...commonOptions.scales, y: { ...commonOptions.scales.y, ...yScaleOpt } }, plugins: { legend: { display: false } } }
         };
         setChart(new Chart(ctx, config));
     }
@@ -277,12 +295,10 @@ function renderComplexChart(id, chartObj, setChart, realArr, imagArr) {
     }
 }
 
-// Start Loop
 function startLoop() {
     if (updateInterval) clearInterval(updateInterval);
     updateInterval = setInterval(fetchData, 5000); 
 }
 
-// Init
 fetchData();
 startLoop();
