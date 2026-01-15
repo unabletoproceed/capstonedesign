@@ -37,7 +37,7 @@
         
         /* SOLUSI GAMBAR RUSAK (Avatar Fallback) */
         .avatar { 
-            background-color: #ddd; /* Warna abu-abu */
+            background-color: #ddd; 
             width: 100px; height: 100px; 
             border-radius: 50%; 
             margin: 0 auto 10px auto;
@@ -47,13 +47,33 @@
         }
         .avatar img { 
             width: 100%; height: 100%; object-fit: cover;
-            /* Sembunyikan gambar jika error/404 agar background abu yang muncul */
             display: block; 
         }
-        /* Helper class jika ingin menyembunyikan img lewat JS */
         .img-error { display: none !important; }
 
-        @media (max-width: 768px) { .nav-links { display: none; } }
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        .chart-container { height: 300px; position: relative; }
+        
+        /* Team Section */
+        .team-section { text-align: center; margin-top: 50px; }
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; }
+        .team-card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+
+        /* Footer */
+        .main-footer { background: #fff; padding: 40px 20px 20px; margin-top: 50px; border-top: 1px solid #eee; }
+        .footer-container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; }
+        .footer-bottom { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; color: #888; }
+        .footer-links { list-style: none; padding: 0; }
+        .footer-links li { margin-bottom: 10px; }
+        .footer-links a { text-decoration: none; color: #555; }
+
+        @media (max-width: 768px) { 
+            .nav-links { display: none; } 
+            .stats-grid, .charts-grid { grid-template-columns: 1fr; }
+        }
     </style>
 
     <link rel="preload" href="css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -86,7 +106,7 @@
         <header class="hero-section">
             <div class="hero-content">
                 <h1 data-i18n="hero_title">Sistem Estimasi Debit Air Sungai Berbasis Radar untuk Mendukung Mitigasi Dini Banjir</h1>
-                <p data-i18n="hero_desc">Monitoring kecepatan arus dan debit sungai berbasis radar & IoT.</p>
+                <p data-i18n="hero_desc">Monitoring kecepatan arus dan tinggi muka air sungai berbasis radar & IoT.</p>
             </div>
         </header>
 
@@ -105,12 +125,6 @@
                     </iframe>
                 <p class="video-caption">Demo SERABI</p>
             </div>
-
-                <div class="steps-wrapper">
-                    <div class="step-item"><div class="step-number">1</div><div class="step-content"><h3>Radar Sensing</h3><p>Gelombang 24GHz dipancarkan untuk mengukur Doppler Shift.</p></div></div>
-                    <div class="step-item"><div class="step-number">2</div><div class="step-content"><h3>Processing</h3><p>Algoritma FFT memisahkan sinyal murni dari noise lingkungan.</p></div></div>
-                    <div class="step-item"><div class="step-number">3</div><div class="step-content"><h3>Dashboard</h3><p>Visualisasi data Real-Time via Supabase.</p></div></div>
-                </div>
             </div>
         </section>
 
@@ -132,8 +146,8 @@
                 </div>
                 <div style="margin-top:15px; font-size:0.95rem; color:#525f7f; border-top:1px solid #eee; padding-top:10px;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                        <span>Debit Air:</span>
-                        <strong id="val-discharge" style="font-size:1.1rem;">-</strong>
+                        <span>Tinggi Air:</span>
+                        <strong id="val-water-level" style="font-size:1.1rem;">-</strong>
                     </div>
                     <div style="display:flex; justify-content:space-between;">
                         <span>Kecepatan Arus:</span>
@@ -154,8 +168,8 @@
                 <div class="chart-container"><canvas id="velocityChart"></canvas></div>
             </div>
             <div class="card chart-card">
-                <h3 data-i18n="chart_dis_title">Grafik Debit (1 Jam Terakhir)</h3>
-                <div class="chart-container"><canvas id="dischargeChart"></canvas></div>
+                <h3>Grafik Tinggi Air (1 Jam Terakhir)</h3>
+                <div class="chart-container"><canvas id="waterLevelChart"></canvas></div>
             </div>
         </section>
 
@@ -215,7 +229,8 @@
     <script type="module">
         import { supabase } from './js/supabase.js';
 
-        let map, marker, velChart, disChart, currentDeviceId;
+        // Variable diupdate: disChart diganti wlChart
+        let map, marker, velChart, wlChart, currentDeviceId;
 
         window.addEventListener('load', async () => {
             console.log("System Check: Checking libraries...");
@@ -271,12 +286,13 @@
                 });
             }
 
-            const ctxDis = document.getElementById('dischargeChart')?.getContext('2d');
-            if(ctxDis) {
-                if(disChart) disChart.destroy();
-                disChart = new Chart(ctxDis, {
+            // UBAH: Inisialisasi Chart untuk Water Level (Tinggi Air)
+            const ctxWl = document.getElementById('waterLevelChart')?.getContext('2d');
+            if(ctxWl) {
+                if(wlChart) wlChart.destroy();
+                wlChart = new Chart(ctxWl, {
                     type: 'line',
-                    data: { labels: [], datasets: [{ label: 'Debit', data: [], borderColor: '#2dce89', backgroundColor: 'rgba(45, 206, 137, 0.1)', fill: true, tension: 0.3 }] },
+                    data: { labels: [], datasets: [{ label: 'Tinggi Air (m)', data: [], borderColor: '#006064', backgroundColor: 'rgba(0, 96, 100, 0.1)', fill: true, tension: 0.3 }] },
                     options: commonOptions
                 });
             }
@@ -340,15 +356,19 @@
         function updateStatus(row) {
             const date = new Date(row.timestamp);
             const timeStr = date.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
-            document.getElementById('val-discharge').textContent = (row.discharge?.toFixed(2) || '0') + " m³/s";
+            
+            // UBAH: Menggunakan row.water_level untuk ditampilkan
+            document.getElementById('val-water-level').textContent = (row.water_level?.toFixed(2) || '0') + " m";
             document.getElementById('val-velocity').textContent = (row.velocity?.toFixed(2) || '0') + " m/s";
             
             const statEl = document.getElementById('latest-status');
             const indEl = document.getElementById('status-indicator');
             const connEl = document.getElementById('conn-status');
 
-            if(row.discharge > 20) { statEl.textContent = "BAHAYA - BANJIR"; statEl.style.color = "#f5365c"; }
-            else if(row.discharge > 10) { statEl.textContent = "SIAGA"; statEl.style.color = "#fb6340"; }
+            // UBAH: Logika Status berdasarkan Tinggi Air (water_level)
+            // Asumsi: > 2.0 meter Bahaya, > 1.0 meter Siaga. Sesuaikan angkanya jika perlu.
+            if(row.water_level > 2.0) { statEl.textContent = "BAHAYA - BANJIR"; statEl.style.color = "#f5365c"; }
+            else if(row.water_level > 1.0) { statEl.textContent = "SIAGA"; statEl.style.color = "#fb6340"; }
             else { statEl.textContent = "NORMAL / AMAN"; statEl.style.color = "#2dce89"; }
 
             connEl.textContent = `Update: ${timeStr}`;
@@ -356,16 +376,19 @@
         }
 
         function updateCharts(history) {
-            if(!velChart || !disChart) return;
+            if(!velChart || !wlChart) return;
 
             const lbls = history.map(d => new Date(d.timestamp).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}));
+            
+            // Update Velocity
             velChart.data.labels = lbls;
             velChart.data.datasets[0].data = history.map(d => d.velocity);
             velChart.update();
 
-            disChart.data.labels = lbls;
-            disChart.data.datasets[0].data = history.map(d => d.discharge);
-            disChart.update();
+            // UBAH: Update Water Level Chart
+            wlChart.data.labels = lbls;
+            wlChart.data.datasets[0].data = history.map(d => d.water_level);
+            wlChart.update();
         }
 
         function updateMap(lat, lng, name) {
@@ -377,7 +400,7 @@
 
         function setEmpty() {
             document.getElementById('latest-status').textContent = "Tidak Ada Data";
-            document.getElementById('val-discharge').textContent = "-";
+            document.getElementById('val-water-level').textContent = "-";
             document.getElementById('val-velocity').textContent = "-";
         }
 
